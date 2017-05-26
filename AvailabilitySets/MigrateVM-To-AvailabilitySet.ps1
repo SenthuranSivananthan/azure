@@ -4,6 +4,7 @@
 # allowed.
 
 # Assumptions:
+# - All VMs that will be added to the availability set are identical in VM size.  See https://azure.microsoft.com/en-us/blog/resize-virtual-machines/ for description on hardware clusters and their requirements.
 # - Operating on Managed Disks
 # - Extensions are not installed through this script
 # - VM Diagnostics needs to be turn on manually
@@ -14,7 +15,7 @@
 # NOTE:  NOTHING WILL BE DELETED WITHOUT USER APPROVAL THROUGH PROMPTS
 
 $ResourceGroupName = "test-avset"
-$VMName = "vm3"
+$VMName = "vm4"
 $AvailabilitySetName = "test-vm-set"
 $AvailabilitySetFaultDomain = 3
 $AvailabilitySetUpdateDomain = 3
