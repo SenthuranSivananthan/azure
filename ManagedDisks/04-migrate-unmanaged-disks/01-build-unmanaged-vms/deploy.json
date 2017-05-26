@@ -1,0 +1,178 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmNamePrefix": {
+            "type": "string",
+            "minLength": 2
+        },
+        "numberOfVMs": {
+            "type": "int",
+            "defaultValue": 2
+        }
+    },
+    "variables": {
+        "vmUsername": "mddemo",
+        "vmPassword": "Canada1234!!",
+        "vmSku": "Standard_D2_V2"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[concat('stg',uniqueString(resourceGroup().id))]",
+            "apiVersion": "2016-01-01",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "Storage"
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[concat(parameters('vmNamePrefix'), 'Set')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "platformFaultDomainCount": 2,
+                "platformUpdateDomainCount": 5
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "vnet",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "default",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "copy": {
+                "count": "[parameters('numberOfVMs')]",
+                "name": "pip-loop"
+            },
+            "name": "[concat(parameters('vmNamePrefix'), '-', copyIndex(), '-pip')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Network/networkInterfaces",
+            "copy": {
+                "count": "[parameters('numberOfVMs')]",
+                "name": "nic-loop"
+            },
+            "name": "[concat(parameters('vmNamePrefix'), '-', copyIndex(), '-nic')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "Microsoft.Network/virtualNetworks/vnet",
+                "[concat('Microsoft.Network/publicIPAddresses/', parameters('vmNamePrefix'), '-', copyIndex(), '-pip')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(parameters('vmNamePrefix'), '-', copyIndex(), '-pip'))]"
+                            },
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', 'vnet'), '/subnets/default')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines",
+            "copy": {
+                "count": "[parameters('numberOfVMs')]",
+                "name": "vm-loop"
+            },
+            "name": "[concat(parameters('vmNamePrefix'), '-', copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', 'stg', uniqueString(resourceGroup().id))]",
+                "[concat('Microsoft.Compute/availabilitySets/', parameters('vmNamePrefix'), 'Set')]",
+                "[concat('Microsoft.Network/networkInterfaces/', parameters('vmNamePrefix'),'-',copyIndex(), '-nic')]"
+            ],
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', concat(parameters('vmNamePrefix'), 'Set'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSku')]"
+                },
+                "osProfile": {
+                    "computerName": "WindowsVM1",
+                    "adminUsername": "[variables('vmUsername')]",
+                    "adminPassword": "[variables('vmPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2012-R2-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "osdisk",
+                        "vhd": {
+                            "uri": "[concat('http://stg',uniqueString(resourceGroup().id),'.blob.core.windows.net/vhds/','osdisk', copyindex(), '.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    },
+                    "dataDisks": [
+                        {
+                            "name": "[concat(parameters('vmNamePrefix'), '-', copyIndex(), '-datadisk1')]",
+                            "diskSizeGB": "128",
+                            "lun": 0,
+                            "vhd": {
+                                "Uri": "[concat('http://stg', uniqueString(resourceGroup().id), '.blob.core.windows.net/vhds/',parameters('vmNamePrefix'),'-', copyindex(),'-datadisk1.vhd')]"
+                            },
+                            "caching": "None",
+                            "createOption": "Empty"
+                        },
+                        {
+                            "name": "[concat(parameters('vmNamePrefix'), '-', copyIndex(), '-datadisk2')]",
+                            "diskSizeGB": "128",
+                            "lun": 1,
+                            "vhd": {
+                                "Uri": "[concat('http://stg', uniqueString(resourceGroup().id), '.blob.core.windows.net/vhds/',parameters('vmNamePrefix'),'-', copyindex(),'-datadisk2.vhd')]"
+                            },
+                            "caching": "None",
+                            "createOption": "Empty"
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmNamePrefix'), '-', copyIndex(), '-nic'))]"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

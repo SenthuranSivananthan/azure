@@ -1,0 +1,42 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "diskSnapshotName": {
+            "type": "string",
+            "minLength": 2
+        },
+        "diskName": {
+            "type": "string",
+            "minLength": 2
+        },
+        "diskSize": {
+            "type": "int",
+            "minValue": 32
+        },
+        "diskAccountType": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_LRS",
+                "Premium_LRS"
+            ]
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Compute/disks",
+            "name": "[parameters('diskName')]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2016-04-30-preview",
+            "properties": {
+                "creationData": {
+                    "createOption": "copy",
+                    "sourceUri": "[resourceId('Microsoft.Compute/snapshots', concat(parameters('diskSnapshotName')))]"
+                },
+                "accountType": "[parameters('diskAccountType')]",
+                "diskSizeGB": "[parameters('diskSize')]"
+            }
+        }
+    ]
+}
