@@ -25,7 +25,7 @@
     }
 
     $ResourceGroupList = Get-AzureRmResourceGroup -Verbose
-    ForEach -Parallel ($ResourceGroupName in $ResourceGroupList.ResourceGroupName)
+    ForEach -Parallel -ThrottleLimit 2 ($ResourceGroupName in $ResourceGroupList.ResourceGroupName)
     {
         InlineScript 
         {
