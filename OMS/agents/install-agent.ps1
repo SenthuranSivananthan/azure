@@ -63,7 +63,7 @@ foreach ($ResourceGroupName in $ResourceGroupList.ResourceGroupName)
                                 -Name OmsAgentForLinux `
                                 -Publisher Microsoft.EnterpriseCloud.Monitoring `
                                 -ResourceGroupName $ResourceGroupName `
-                                -TypeHandlerVersion 1.0 `
+                                -TypeHandlerVersion 1.3 `
                                 -VMName $VM.Name `
                                 -Location $VM.Location `
                                 -ProtectedSettings $ProtectedSettings `
