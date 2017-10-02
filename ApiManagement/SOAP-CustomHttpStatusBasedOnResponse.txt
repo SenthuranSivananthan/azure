@@ -60,6 +60,13 @@
                                 }
                             }
                         </set-body>
+                        <return-response>
+                            <set-status code="200" reason="Success" />
+                            <set-header name="Content-Type" exists-action="override">
+                                <value>application/json</value>
+                            </set-header>
+                            <set-body>@(context.Response.Body.As<String>())</set-body>
+                        </return-response>
                     </otherwise>
                 </choose>
             </when>
