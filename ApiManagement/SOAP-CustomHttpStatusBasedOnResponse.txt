@@ -1,0 +1,85 @@
+<policies>
+    <inbound>
+        <base />
+        <rewrite-uri template="/CustomHttpResponseBasedOnAppStatus.asmx" copy-unmatched-params="false" />
+        <set-header name="SOAPAction" exists-action="override">
+            <value>"http://tempuri.org/Hello"</value>
+        </set-header>
+        <set-body template="liquid">
+			<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns="http://tempuri.org/">
+				<soap:Body>
+					<Hello>
+						<input>{{body.hello.input}}</input>
+					</Hello>
+				</soap:Body>
+			</soap:Envelope>
+		</set-body>
+        <set-header name="Content-Type" exists-action="override">
+            <value>text/xml</value>
+        </set-header>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <choose>
+            <when condition="@(context.Response.StatusCode < 400)">
+                <set-variable name="SOAPResponse" value="@{
+                                                                                                XNamespace soapNS = "http://schemas.xmlsoap.org/soap/envelope/";
+                                                                                                XNamespace responseNS = "http://tempuri.org/";
+                                                                                                
+                                                                                                var codeElement = context.Response.Body.As<XDocument>(preserveContent: true)
+                                                                                                                    .Elements(soapNS + "Envelope")
+                                                                                                                    .Elements(soapNS + "Body")
+                                                                                                                    .Elements(responseNS + "HelloResponse")
+                                                                                                                    .Elements(responseNS + "HelloResult")
+                                                                                                                    .Elements(responseNS + "Code")
+                                                                                                                    .FirstOrDefault();
+                                                                                                                    
+                                                                                                return codeElement.Value;
+                                                                                            }" />
+                <choose>
+                    <when condition="@(context.Variables.GetValueOrDefault<string>("SOAPResponse") == "TextTooSmall")">
+                        <return-response>
+                            <set-status code="400" reason="Text size too small" />
+                        </return-response>
+                    </when>
+                    <when condition="@(context.Variables.GetValueOrDefault<string>("SOAPResponse") == "InvalidInput")">
+                        <return-response>
+                            <set-status code="403" reason="Invalid Request" />
+                        </return-response>
+                    </when>
+                    <otherwise>
+                        <set-body template="liquid">
+                            {
+                                "Response" : 
+                                {
+                                  "Code" : "{{body.envelope.body.HelloResponse.HelloResult.Code}}",
+                                  "Message" : "{{body.envelope.body.HelloResponse.HelloResult.Message}}"
+                                }
+                            }
+                        </set-body>
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                <!-- Error response as per https://github.com/Microsoft/api-guidelines/blob/master/Guidelines.md#7102-error-condition-responses  -->
+                <set-body template="liquid">
+                                        {
+                                        "error": {
+                                            "code": "{{body.envelope.body.fault.faultcode}}",
+                                              "message": "{{body.envelope.body.fault.faultstring}}"
+                                              }
+                                        }
+                                    </set-body>
+            </otherwise>
+        </choose>
+        <set-header name="Content-Type" exists-action="override">
+            <value>application/json</value>
+        </set-header>
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
