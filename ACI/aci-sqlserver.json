@@ -1,0 +1,62 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "name": "sqlserver",
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2017-08-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "containers": [
+                    {
+                        "name": "sqlserver",
+                        "properties": {
+                            "image": "microsoft/mssql-server-linux",
+                            "ports": [
+                                {
+                                    "port": "1433"
+                                }
+                            ],
+                            "environmentVariables": [
+                                {
+                                  "name": "ACCEPT_EULA",
+                                  "value": "Y"
+                                },
+                                {
+                                    "name": "MSSQL_SA_PASSWORD",
+                                    "value": "Hello2017!"
+                                },
+                                {
+                                    "name": "MSSQL_PID",
+                                    "value": "Developer"
+                                }
+                              ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": "2",
+                                    "memoryInGb": "3.5"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "osType": "Linux",
+                "ipAddress": {
+                    "type": "Public",
+                    "ports": [
+                        {
+                            "protocol": "tcp",
+                            "port": "1433"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

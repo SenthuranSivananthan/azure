@@ -1,0 +1,47 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {},
+    "resources": [
+        {
+            "name": "tomcat7",
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2017-08-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "containers": [
+                    {
+                        "name": "tomcat7",
+                        "properties": {
+                            "image": "tomcat:7",
+                            "ports": [
+                                {
+                                    "port": "8080"
+                                }
+                            ],
+                            "environmentVariables": [],
+                            "resources": {
+                                "requests": {
+                                    "cpu": "2",
+                                    "memoryInGb": "3.5"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "osType": "Linux",
+                "ipAddress": {
+                    "type": "Public",
+                    "ports": [
+                        {
+                            "protocol": "tcp",
+                            "port": "8080"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
