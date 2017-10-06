@@ -33,7 +33,7 @@
                                                                             
                                                         return element.Value;
                                                     }" />
-		<!-- Invoke Business Trasaction -->
+		<!-- Invoke Business Transaction -->
 		<rewrite-uri template="/Echo.asmx" copy-unmatched-params="false" />
 		<set-header name="SOAPAction" exists-action="override">
 			<value>http://tempuri.org/Send</value>
@@ -59,7 +59,7 @@
 		<set-body template="liquid">
 		    {
 		        "Response": "{{body.envelope.body.SendResponse.SendResult}}"
-            }
+            	    }
 		</set-body>
 		<set-header name="Content-Type" exists-action="override">
 			<value>application/json</value>

@@ -1,0 +1,60 @@
+<policies>
+    <inbound>
+        <base />
+        <rewrite-uri template="/CustomHttpResponseBasedOnAppStatus.asmx" copy-unmatched-params="false" />
+        <set-header name="SOAPAction" exists-action="override">
+            <value>"http://tempuri.org/Hello"</value>
+        </set-header>
+        <set-body template="liquid">
+			<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns="http://tempuri.org/">
+				<soap:Body>
+					<Hello>
+						<input>{{body.hello.input}}</input>
+					</Hello>
+				</soap:Body>
+			</soap:Envelope>
+		</set-body>
+        <set-header name="Content-Type" exists-action="override">
+            <value>text/xml</value>
+        </set-header>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <choose>
+            <when condition="@(context.Response.StatusCode < 400)">
+                <set-body template="liquid">
+                {
+                    "Response" : 
+                    {
+                        {% if body.envelope.body.HelloResponse.HelloResult.Code == 'Success' %}
+                            "message": "Success"
+                        {% else %}
+                            "message": "Unknown status"
+                        {% endif %}
+                    }
+                }
+            </set-body>
+            </when>
+            <otherwise>
+                <!-- Error response as per https://github.com/Microsoft/api-guidelines/blob/master/Guidelines.md#7102-error-condition-responses  -->
+                <set-body template="liquid">
+                                        {
+                                        "error": {
+                                            "code": "{{body.envelope.body.fault.faultcode}}",
+                                              "message": "{{body.envelope.body.fault.faultstring}}"
+                                              }
+                                        }
+                                    </set-body>
+            </otherwise>
+        </choose>
+        <set-header name="Content-Type" exists-action="override">
+            <value>application/json</value>
+        </set-header>
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
