@@ -11,6 +11,9 @@
                 "sku": "Standard",
                 "pipName": "vnet1-network-gw-pip",
                 "bgpAsn": "65000"
+            },
+            "localGateway": {
+                "vnet3Name": "vnet1-to-vnet3-local-gateway"
             }
         },
         "vnet2": {
@@ -25,6 +28,9 @@
                 "sku": "Standard",
                 "pipName": "vnet3-network-gw-pip",
                 "bgpAsn": "65001"
+            },
+            "localGateway": {
+                "vnet1Name": "vnet3-to-vnet1-local-gateway"
             }
         },
         "vnet4": {
@@ -244,6 +250,48 @@
                         "SSTP",
                         "IkeV2"
                     ]
+                }
+            }
+        },
+        {
+            "name": "[variables('vnet1').localGateway.vnet3Name]",
+            "type": "Microsoft.Network/localNetworkGateways",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet3').networkGateway.name)]"
+            ],
+            "properties": {
+                "localNetworkAddressSpace": {
+                    "addressPrefixes": [
+                        "[concat(reference(concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet3').networkGateway.name), '2017-03-01').bgpSettings.bgpPeeringAddress, '/32')]"
+                    ]
+                },
+                "gatewayIpAddress": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('vnet3').networkGateway.pipName), '2017-03-01').ipAddress]",
+                "bgpSettings": {
+                    "asn": "[reference(concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet3').networkGateway.name), '2017-03-01').bgpSettings.asn]",
+                    "bgpPeeringAddress": "[reference(concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet3').networkGateway.name), '2017-03-01').bgpSettings.bgpPeeringAddress]"
+                }
+            }
+        },
+        {
+            "name": "[variables('vnet3').localGateway.vnet1Name]",
+            "type": "Microsoft.Network/localNetworkGateways",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet3').location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name)]"
+            ],
+            "properties": {
+                "localNetworkAddressSpace": {
+                    "addressPrefixes": [
+                        "[concat(reference(concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name), '2017-03-01').bgpSettings.bgpPeeringAddress, '/32')]"
+                    ]
+                },
+                "gatewayIpAddress": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('vnet1').networkGateway.pipName), '2017-03-01').ipAddress]",
+                "bgpSettings": {
+                    "asn": "[reference(concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name), '2017-03-01').bgpSettings.asn]",
+                    "bgpPeeringAddress": "[reference(concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name), '2017-03-01').bgpSettings.bgpPeeringAddress]"
                 }
             }
         },
