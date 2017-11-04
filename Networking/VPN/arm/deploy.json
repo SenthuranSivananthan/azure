@@ -19,6 +19,10 @@
                 "ipSecToVNET3": {
                     "name": "s2s-vnet1-to-vnet3",
                     "sharedKey": "Azure&23)@"
+                },
+                "v2vToVNET3": {
+                    "name": "v2v-vnet1-to-vnet4",
+                    "sharedKey": "Azure&23)@"
                 }
             }
         },
@@ -47,7 +51,19 @@
         },
         "vnet4": {
             "name": "vnet4",
-            "location": "CanadaEast"
+            "location": "CanadaEast",
+            "networkGateway": {
+                "name": "vnet4-network-gw",
+                "sku": "Standard",
+                "pipName": "vnet4-network-gw-pip",
+                "bgpAsn": "65002"
+            },
+            "connections": {
+                "v2vToVNET1": {
+                    "name": "v2v-vnet4-to-vnet1",
+                    "sharedKey": "Azure&23)@"
+                }
+            }
         }
     },
     "resources": [
@@ -180,6 +196,16 @@
             }
         },
         {
+            "name": "[variables('vnet4').networkGateway.pipName]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet4').location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "publicIPAddressVersion": "Ipv4"
+            }
+        },
+        {
             "name": "[variables('vnet1').networkGateway.name]",
             "type": "Microsoft.Network/virtualNetworkGateways",
             "apiVersion": "2017-03-01",
@@ -256,6 +282,49 @@
                 },
                 "bgpSettings": {
                     "asn": "[variables('vnet3').networkGateway.bgpAsn]"
+                },
+                "vpnClientConfiguration": {
+                    "vpnClientProtocols": [
+                        "SSTP",
+                        "IkeV2"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "[variables('vnet4').networkGateway.name]",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet4').location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnet4').name)]",
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('vnet4').networkGateway.pipName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "default",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet4').name, 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vnet4').networkGateway.pipName)]"
+                            }
+                        }
+                    }
+                ],
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": true,
+                "activeActive": false,
+                "sku": {
+                    "name": "[variables('vnet4').networkGateway.sku]",
+                    "tier": "[variables('vnet4').networkGateway.sku]"
+                },
+                "bgpSettings": {
+                    "asn": "[variables('vnet4').networkGateway.bgpAsn]"
                 },
                 "vpnClientConfiguration": {
                     "vpnClientProtocols": [
@@ -347,6 +416,50 @@
                 "enableBgp": true
             }
         },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('vnet1').connections.v2vToVNET3.name]",
+            "apiVersion": "2017-06-01",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name)]",
+                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet4').networkGateway.name)]"
+            ],
+            "properties": {
+                "sharedKey": "[variables('vnet1').connections.v2vToVNET3.sharedKey]",
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vnet1').networkGateway.name)]"
+                },
+                "virtualNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vnet4').networkGateway.name)]"
+                },
+                "connectionType": "Vnet2Vnet",
+                "routingWeight": 0,
+                "enableBgp": true
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('vnet4').connections.v2vToVNET1.name]",
+            "apiVersion": "2017-06-01",
+            "location": "[variables('vnet4').location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name)]",
+                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet4').networkGateway.name)]"
+            ],
+            "properties": {
+                "sharedKey": "[variables('vnet4').connections.v2vToVNET1.sharedKey]",
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vnet4').networkGateway.name)]"
+                },
+                "virtualNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vnet1').networkGateway.name)]"
+                },
+                "connectionType": "Vnet2Vnet",
+                "routingWeight": 0,
+                "enableBgp": true
+            }
+        },        
         {
             "name": "[concat(variables('vnet1').name, '/', variables('vnet2').name, '-peer')]",
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
