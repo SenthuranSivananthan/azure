@@ -1,0 +1,290 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {
+        "vnet1": {
+            "name": "vnet1",
+            "location": "CanadaCentral",
+            "networkGateway": {
+                "name": "vnet1-network-gw",
+                "sku": "Standard",
+                "pipName": "vnet1-network-gw-pip",
+                "bgpAsn": "65000"
+            }
+        },
+        "vnet2": {
+            "name": "vnet2",
+            "location": "CanadaCentral"
+        },
+        "vnet3": {
+            "name": "vnet3",
+            "location": "EastUS",
+            "networkGateway": {
+                "name": "vnet3-network-gw",
+                "sku": "Standard",
+                "pipName": "vnet3-network-gw-pip",
+                "bgpAsn": "65001"
+            }
+        },
+        "vnet4": {
+            "name": "vnet4",
+            "location": "CanadaEast"
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-03-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet1').name]",
+            "location": "[variables('vnet1').location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.1.0.0/24"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "application",
+                        "properties": {
+                            "addressPrefix": "10.1.0.0/26"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "10.1.0.64/28"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2017-03-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet2').name]",
+            "location": "[variables('vnet2').location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.2.0.0/24"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "application",
+                        "properties": {
+                            "addressPrefix": "10.2.0.0/26"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "10.2.0.64/28"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2017-03-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet3').name]",
+            "location": "[variables('vnet3').location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.3.0.0/24"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "application",
+                        "properties": {
+                            "addressPrefix": "10.3.0.0/26"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "10.3.0.64/28"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2017-03-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet4').name]",
+            "location": "[variables('vnet4').location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.4.0.0/24"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "application",
+                        "properties": {
+                            "addressPrefix": "10.4.0.0/26"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "10.4.0.64/28"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[variables('vnet1').networkGateway.pipName]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet1').location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "publicIPAddressVersion": "Ipv4"
+            }
+        },
+        {
+            "name": "[variables('vnet3').networkGateway.pipName]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet3').location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "publicIPAddressVersion": "Ipv4"
+            }
+        },
+        {
+            "name": "[variables('vnet1').networkGateway.name]",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnet1').name)]",
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('vnet1').networkGateway.pipName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "default",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1').name, 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vnet1').networkGateway.pipName)]"
+                            }
+                        }
+                    }
+                ],
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": true,
+                "activeActive": false,
+                "sku": {
+                    "name": "[variables('vnet1').networkGateway.sku]",
+                    "tier": "[variables('vnet1').networkGateway.sku]"
+                },
+                "bgpSettings": {
+                    "asn": "[variables('vnet1').networkGateway.bgpAsn]"
+                },
+                "vpnClientConfiguration": {
+                    "vpnClientProtocols": [
+                        "SSTP",
+                        "IkeV2"
+                    ],
+                    "vpnClientRootCertificates": [],
+                    "vpnClientRevokedCertificates": []
+                }
+            }
+        },
+        {
+            "name": "[variables('vnet3').networkGateway.name]",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet3').location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnet3').name)]",
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('vnet3').networkGateway.pipName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "default",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet3').name, 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vnet3').networkGateway.pipName)]"
+                            }
+                        }
+                    }
+                ],
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": true,
+                "activeActive": false,
+                "sku": {
+                    "name": "[variables('vnet3').networkGateway.sku]",
+                    "tier": "[variables('vnet3').networkGateway.sku]"
+                },
+                "bgpSettings": {
+                    "asn": "[variables('vnet3').networkGateway.bgpAsn]"
+                },
+                "vpnClientConfiguration": {
+                    "vpnClientProtocols": [
+                        "SSTP",
+                        "IkeV2"
+                    ],
+                    "vpnClientRootCertificates": [],
+                    "vpnClientRevokedCertificates": []
+                }
+            }
+        },
+        {
+            "name": "[concat(variables('vnet1').name, '/', variables('vnet2').name, '-peer')]",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2017-03-01",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2').name)]"
+                }
+            }
+        },
+        {
+            "name": "[concat(variables('vnet2').name, '/', variables('vnet1').name, '-peer')]",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2017-03-01",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
