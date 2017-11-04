@@ -19,4 +19,7 @@ Describe the topology that enables customers to connect multiple virtual network
 
 ## Automation Template
 
-Coming Soon
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FSenthuranSivananthan%2Fazure%2Fmaster%2FNetworking%2FVPN%2Farm%2Fdeploy.json)
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FSenthuranSivananthan%2Fazure%2Fmaster%2FNetworking%2FVPN%2Farm%2Fdeploy.json" target="_blank">
+    <img src="http://armviz.io/visualizebutton.png"/>
+</a>
