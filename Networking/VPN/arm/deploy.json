@@ -200,9 +200,7 @@
                     "vpnClientProtocols": [
                         "SSTP",
                         "IkeV2"
-                    ],
-                    "vpnClientRootCertificates": [],
-                    "vpnClientRevokedCertificates": []
+                    ]
                 }
             }
         },
@@ -245,9 +243,7 @@
                     "vpnClientProtocols": [
                         "SSTP",
                         "IkeV2"
-                    ],
-                    "vpnClientRootCertificates": [],
-                    "vpnClientRevokedCertificates": []
+                    ]
                 }
             }
         },
