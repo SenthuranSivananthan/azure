@@ -14,6 +14,12 @@
             },
             "localGateway": {
                 "vnet3Name": "vnet1-to-vnet3-local-gateway"
+            },
+            "connections": {
+                "ipSecToVNET3": {
+                    "name": "s2s-vnet1-to-vnet3",
+                    "sharedKey": "Azure&23)@"
+                }
             }
         },
         "vnet2": {
@@ -31,6 +37,12 @@
             },
             "localGateway": {
                 "vnet1Name": "vnet3-to-vnet1-local-gateway"
+            },
+            "connections": {
+                "ipSecToVNET1": {
+                    "name": "s2s-vnet3-to-vnet1",
+                    "sharedKey": "Azure&23)@"
+                }
             }
         },
         "vnet4": {
@@ -293,6 +305,46 @@
                     "asn": "[reference(concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name), '2017-03-01').bgpSettings.asn]",
                     "bgpPeeringAddress": "[reference(concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet1').networkGateway.name), '2017-03-01').bgpSettings.bgpPeeringAddress]"
                 }
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('vnet1').connections.ipSecToVNET3.name]",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/localNetworkGateways/', variables('vnet1').localGateway.vnet3Name)]"
+            ],
+            "properties": {
+                "sharedKey": "[variables('vnet1').connections.ipSecToVNET3.sharedKey]",
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vnet1').networkGateway.name)]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('vnet1').localGateway.vnet3Name)]"
+                },
+                "connectionType": "IPsec",
+                "enableBgp": true
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('vnet3').connections.ipSecToVNET1.name]",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('vnet3').location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/localNetworkGateways/', variables('vnet3').localGateway.vnet1Name)]"
+            ],
+            "properties": {
+                "sharedKey": "[variables('vnet3').connections.ipSecToVNET1.sharedKey]",
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vnet3').networkGateway.name)]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('vnet3').localGateway.vnet1Name)]"
+                },
+                "connectionType": "IPsec",
+                "enableBgp": true
             }
         },
         {
