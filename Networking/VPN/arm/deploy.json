@@ -20,7 +20,7 @@
                     "name": "s2s-vnet1-to-vnet3",
                     "sharedKey": "Azure&23)@"
                 },
-                "v2vToVNET3": {
+                "v2vToVNET4": {
                     "name": "v2v-vnet1-to-vnet4",
                     "sharedKey": "Azure&23)@"
                 }
@@ -418,7 +418,7 @@
         },
         {
             "type": "Microsoft.Network/connections",
-            "name": "[variables('vnet1').connections.v2vToVNET3.name]",
+            "name": "[variables('vnet1').connections.v2vToVNET4.name]",
             "apiVersion": "2017-06-01",
             "location": "[variables('vnet1').location]",
             "dependsOn": [
@@ -426,7 +426,7 @@
                 "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vnet4').networkGateway.name)]"
             ],
             "properties": {
-                "sharedKey": "[variables('vnet1').connections.v2vToVNET3.sharedKey]",
+                "sharedKey": "[variables('vnet1').connections.v2vToVNET4.sharedKey]",
                 "virtualNetworkGateway1": {
                     "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vnet1').networkGateway.name)]"
                 },
