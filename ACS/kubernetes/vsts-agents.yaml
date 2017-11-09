@@ -1,0 +1,30 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: vsts-deployment
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: vsts_agent
+    spec:
+      containers:
+      - name: vsts-agent
+        image: microsoft/vsts-agent:latest
+        imagePullPolicy: Always
+        env:
+        - name: VSTS_POOL
+          value: <VSTS_POOL>
+        - name: VSTS_ACCOUNT
+          value: <VSTS_ACCOUNT>
+        - name: VSTS_TOKEN 
+          value: <VSTS_TOKEN>
