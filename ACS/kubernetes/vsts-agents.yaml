@@ -1,10 +1,24 @@
 ---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vsts-deployment
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1beta1
+    kind: Deployment
+    name: vsts-deployment
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 50
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: vsts-deployment
 spec:
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 2
   minReadySeconds: 10
   strategy:
