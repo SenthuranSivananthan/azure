@@ -1,0 +1,16 @@
+{
+    "proxies": [
+      {
+        "path": "/hello-world/",
+        "proxyProtocol": "http",
+        "proxyHost": "appserver",
+        "proxyPort": 9000
+      },
+      {
+        "path": "/hello-world2/",
+        "proxyProtocol": "http",
+        "proxyHost": "appserver2",
+        "proxyPort": 9000
+      }
+    ]
+  }
