@@ -4,6 +4,11 @@ The goal of this demo is to utilize App Service Hybrid Connecions as a communica
 
 In order to use Hybrid Connections, a Windows Server 2012 or higher machine needs to be installed (an existing server will also work).  Once the server is ready, continue to installing the Hybrid Connection Manager (HCM).  This is the application that creates the outbound connection to Azure and facilitates the TCP connection to the applications that are behind the on-prem firewalls.  Ensure that the server is able to connect to the application servers.  You can have one or more HCM servers.
 
+### Topology
+
+![Topology](images/diagram.png "Topology")
+
+
 ### Components to Deploy
 
 #### Azure Virtual Network
