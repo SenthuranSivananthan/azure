@@ -24,13 +24,14 @@ sudo apt-get install bwm-ng fio
 
 ### VM Configuration
 
-* VM Size:  Standard_DS5_v2
+* VM Size:  Standard_DS5_v2 (Maximum disk throughput = 768 MB/s)
+* Disks:  512 GB SSDs (Maximum throughput & IOPS per disk = 150 MB/s & 2300 IOPS)
 * Operating System: Ubuntu Server 17.10
 * Disk Manager:  LVM
 
 ### Test Configuration
 
-**Using dd**
+#### Using dd
 
 **Scenario 1**
 
@@ -56,7 +57,7 @@ sudo apt-get install bwm-ng fio
 | 512 GB | 4 | 2 TB | 265 MB/s / 489 MB/s |
 | 512 GB | 8 | 4 TB | 300 MB/s / 511 MB/s |
 
-**Using fio**
+#### Using fio
 
 **Scenario 1**
 
@@ -68,8 +69,8 @@ sudo apt-get install bwm-ng fio
 | Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth | Avg. Read/Write IOPS |
 |----------:|-----------:|------------------:|----------------------------------:|---:|
 | 512 GB | 2 | 1 TB | | |
-| 512 GB | 4 | 2 TB | | |
-| 512 GB | 8 | 4 TB | 559 MB/s / 186 | 8949 / 2985 |
+| 512 GB | 4 | 2 TB | 419 MB/s / 140 MB/s | 6712 / 2239 |
+| 512 GB | 8 | 4 TB | 559 MB/s / 186 MB/s | 8949 / 2985 |
 
 **Scenario 2**
 
@@ -81,7 +82,7 @@ sudo apt-get install bwm-ng fio
 | Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth | Avg. Read/Write IOPS |
 |----------:|-----------:|------------------:|----------------------------------:|---:|
 | 512 GB | 2 | 1 TB | | |
-| 512 GB | 4 | 2 TB | | |
+| 512 GB | 4 | 2 TB | 140 MB/s / 420 MB/s | 2236 / 6713 |
 | 512 GB | 8 | 4 TB | 186 MB/s / 560 MB/s | 2985 / 8961 |
 
 **Scenario 3**
@@ -94,7 +95,7 @@ sudo apt-get install bwm-ng fio
 | Disk Size | # of Disks | Addressable Space | Avg. Write Bandwidth | Avg. Write IOPS |
 |----------:|-----------:|------------------:|----------------------------------:|---:|
 | 512 GB | 2 | 1 TB | | |
-| 512 GB | 4 | 2 TB | | |
+| 512 GB | 4 | 2 TB | 559 MB/s | 8946 |
 | 512 GB | 8 | 4 TB | 746 MB/s | 11937 |
 
 **Scenario 4**
@@ -107,7 +108,7 @@ sudo apt-get install bwm-ng fio
 | Disk Size | # of Disks | Addressable Space | Avg. Read Bandwidth | Avg. Read IOPS |
 |----------:|-----------:|------------------:|----------------------------------:|---:|
 | 512 GB | 2 | 1 TB | | |
-| 512 GB | 4 | 2 TB | | |
+| 512 GB | 4 | 2 TB | 559 MB/s | 8952 |
 | 512 GB | 8 | 4 TB | 746 MB/s | 11947 |
 
 ### Configure Disks
@@ -173,7 +174,7 @@ sudo lvs --segments
   lv0  vg0 -wi-a-----    4 striped 2.00t
 ```
 
-### Performance Test with *fio*
+#### Performance Test with *fio*
 
 Execute test with 75% read & 25% read ratio using 64k block size
 
@@ -206,7 +207,7 @@ Disk stats (read/write):
   sdc: ios=307062/102562, merge=0/10, ticks=2418456/767108, in_queue=3185440, util=97.04%
 ```
 
-### Performance Test with *dd*
+#### Performance Test with *dd*
 
 **This is a single-threaded & sequential-write test. Typical applications will not have sustained writes or reads for long periods of time.  Therefore, the results can be meaningless for your scenario.  This will just give you data on burst limits.**
 
