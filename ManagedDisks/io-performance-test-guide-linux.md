@@ -30,6 +30,8 @@ sudo apt-get install bwm-ng fio
 
 ### Test Configuration
 
+**Using dd**
+
 **Scenario 1**
 
 * 64k block size x 2,000,000 blocks
@@ -42,8 +44,6 @@ sudo apt-get install bwm-ng fio
 * 134 GB of read and write data
 * No operating system caching
 
-**Using dd**
-
 | Disk Size | # of Disks | Addressable Space | 64k blocks - Avg. Read/Write Bandwidth | 128k blocks - Avg. Read/Write Bandwidth | Notes |
 |----------:|-----------:|------------------:|----------------------------------:|------:|---:|
 | 512 GB | 2 | 1 TB | 110 MB/s / 314 MB/s | - | - |
@@ -52,11 +52,57 @@ sudo apt-get install bwm-ng fio
 
 **Using fio**
 
-| Disk Size | # of Disks | Addressable Space | 64k blocks - Avg. Read/Write Bandwidth | 128k blocks - Avg. Read/Write Bandwidth | Notes |
-|----------:|-----------:|------------------:|----------------------------------:|------:|---:|
-| 512 GB | 2 | 1 TB | | | |
-| 512 GB | 4 | 2 TB | | | |
-| 512 GB | 8 | 4 TB | | | |
+**Scenario 1**
+
+* 64k block size
+* 75% read, 25% write
+* 100 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth | Avg. Read/Write IOPS |
+|----------:|-----------:|------------------:|----------------------------------:|---:|
+| 512 GB | 2 | 1 TB | | |
+| 512 GB | 4 | 2 TB | | |
+| 512 GB | 8 | 4 TB | 559 MB/s / 186 | 8949 / 2985 |
+
+**Scenario 2**
+
+* 64k block size
+* 25% read, 75% write
+* 100 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth | Avg. Read/Write IOPS |
+|----------:|-----------:|------------------:|----------------------------------:|---:|
+| 512 GB | 2 | 1 TB | | |
+| 512 GB | 4 | 2 TB | | |
+| 512 GB | 8 | 4 TB | 186 MB/s / 560 MB/s | 2985 / 8961 |
+
+**Scenario 3**
+
+* 64k block size
+* 0% read, 100% write
+* 100 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Write Bandwidth | Avg. Write IOPS |
+|----------:|-----------:|------------------:|----------------------------------:|---:|
+| 512 GB | 2 | 1 TB | | |
+| 512 GB | 4 | 2 TB | | |
+| 512 GB | 8 | 4 TB | 746 MB/s | 11937 |
+
+**Scenario 4**
+
+* 64k block size
+* 100% read, 0% write
+* 100 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Read Bandwidth | Avg. Read IOPS |
+|----------:|-----------:|------------------:|----------------------------------:|---:|
+| 512 GB | 2 | 1 TB | | |
+| 512 GB | 4 | 2 TB | | |
+| 512 GB | 8 | 4 TB | 746 MB/s | 11947 |
 
 ### Configure Disks
 
