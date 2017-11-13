@@ -5,19 +5,31 @@
 1. Deploy Ubuntu Server 17.10 VM with SSD Storage
 2. Add up to 8 disks based on the configuration described in the chart below.  Ensure that *Host Caching* is set to None.
 
+### Lessons
+
+1.  Need to balance the maximum IOPS and Network Bandwidth.  You can be throttled by IOPS which will limit the bandwidth you can push through the disks.
+
+2.  SSD-backed VMs will provide dedicated access to the storage cluster.
+
 ### Tools Installation
 
 ```bash
 sudo apt-get install bwm-ng
 ```
 
+### VM Configuration
+
+* VM Size:  Standard_DS5_v2
+* Operating System: Ubuntu Server 17.10
+* Disk Manager:  LVM
+
 ### Disk Configuration
 
 | Disk Size | # of Disks | Stripe Size | Read Bandwidth | Write Bandwidth |
 |----------:|-----------:|------------:|---------------:|----------------:|
 | 512 GB | 1 | 64K | | |
-| 512 GB | 2 | 64K | | |
-| 512 GB | 4 | 64K | 194 MB/s | 224 MB/s |
+| 512 GB | 2 | 64K | 117 MB/s | 270 MB/s |
+| 512 GB | 4 | 64K | 200 MB/s | 456 MB/s |
 | 512 GB | 8 | 64K | | |
 | 1 TB | 1 | 64K | | |
 | 1 TB | 2 | 64K | | |
@@ -107,14 +119,15 @@ sudo dd if=/dev/zero of=/mnt/data/output bs=64k count=100k;
 
 bwm-ng v0.6.1 (probing every 0.500s), press 'h' for help
   input: disk IO type: rate
-  -         iface                   Rx                   Tx                Total
+  \         iface                   Rx                   Tx                Total
   ==============================================================================
-              sdc:           0.00 KB/s        61325.35 KB/s        61325.35 KB/s
-              sdd:           7.98 KB/s        14307.39 KB/s        14315.37 KB/s
-              sde:           7.98 KB/s        59273.45 KB/s        59281.44 KB/s
-              sdf:           0.00 KB/s        56207.59 KB/s        56207.59 KB/s
+              sdc:           0.00 KB/s       148908.38 KB/s       148908.38 KB/s
+              sdd:           0.00 KB/s       147888.45 KB/s       147888.45 KB/s
+              sde:           0.00 KB/s       148908.38 KB/s       148908.38 KB/s
+              sdf:           0.00 KB/s       148908.38 KB/s       148908.38 KB/s
   ------------------------------------------------------------------------------
-            total:          15.97 KB/s       191113.78 KB/s       191129.75 KB/s
+            total:           0.00 KB/s       594613.56 KB/s       594613.56 KB/s
+
 ```
 
 Execute Read Tests
@@ -132,14 +145,14 @@ sudo dd if=/mnt/data/output of=/dev/null bs=64k
 
 bwm-ng v0.6.1 (probing every 0.500s), press 'h' for help
   input: disk IO type: rate
-  /         iface                   Rx                   Tx                Total
+  -         iface                   Rx                   Tx                Total
   ==============================================================================
-              sdc:       47033.93 KB/s            0.00 KB/s        47033.93 KB/s
-              sdd:       47009.98 KB/s            0.00 KB/s        47009.98 KB/s
-              sde:       47033.93 KB/s            0.00 KB/s        47033.93 KB/s
-              sdf:       47137.73 KB/s            0.00 KB/s        47137.73 KB/s
+              sdc:       45732.54 KB/s         3065.87 KB/s        48798.41 KB/s
+              sdd:       46243.52 KB/s         3065.87 KB/s        49309.38 KB/s
+              sde:       45732.54 KB/s         3065.87 KB/s        48798.41 KB/s
+              sdf:       45732.54 KB/s         3065.87 KB/s        48798.41 KB/s
   ------------------------------------------------------------------------------
-            total:      188215.58 KB/s            0.00 KB/s       188215.58 KB/s
+            total:      183441.12 KB/s        12263.47 KB/s       195704.59 KB/s
 
 ```
 
