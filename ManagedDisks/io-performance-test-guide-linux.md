@@ -142,3 +142,13 @@ bwm-ng v0.6.1 (probing every 0.500s), press 'h' for help
             total:      188215.58 KB/s            0.00 KB/s       188215.58 KB/s
 
 ```
+
+### Clean up
+
+```bash
+sudo umount /mnt/data
+sudo lvremove /dev/vg0/lv0
+
+Do you really want to remove and DISCARD active logical volume vg0/lv0? [y/n]: y
+Logical volume "lv0" successfully removed                                                
+```
