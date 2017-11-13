@@ -38,17 +38,23 @@ sudo apt-get install bwm-ng fio
 * 134 GB of read and write data
 * No operating system caching
 
+| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth |
+|----------:|-----------:|------------------:|--------------------------:|
+| 512 GB | 2 | 1 TB | 110 MB/s / 314 MB/s |
+| 512 GB | 4 | 2 TB | 161 MB/s / 492 MB/s |
+| 512 GB | 8 | 4 TB | 293 MB/s / 530 MB/s |
+
 **Scenario 2**
 
 * 128k block size x 1,000,000 blocks
 * 134 GB of read and write data
 * No operating system caching
 
-| Disk Size | # of Disks | Addressable Space | 64k blocks - Avg. Read/Write Bandwidth | 128k blocks - Avg. Read/Write Bandwidth | Notes |
-|----------:|-----------:|------------------:|----------------------------------:|------:|---:|
-| 512 GB | 2 | 1 TB | 110 MB/s / 314 MB/s | - | - |
-| 512 GB | 4 | 2 TB | 161 MB/s / 492 MB/s | 265 MB/s / 489 MB/s  | Throttling at 150 MB/s (Disk limit) |
-| 512 GB | 8 | 4 TB | 293 MB/s / 530 MB/s | 300 MB/s / 511 MB/s  | Bandwidth Throttled at 768 MB/s (VM limit), expect pauses where data is not written to disks |
+| Disk Size | # of Disks | Addressable Space | 128k blocks - Avg. Read/Write Bandwidth |
+|----------:|-----------:|------------------:|----------------------------------------:|
+| 512 GB | 2 | 1 TB | - |
+| 512 GB | 4 | 2 TB | 265 MB/s / 489 MB/s |
+| 512 GB | 8 | 4 TB | 300 MB/s / 511 MB/s |
 
 **Using fio**
 
