@@ -29,88 +29,6 @@ sudo apt-get install bwm-ng fio
 * Operating System: Ubuntu Server 17.10
 * Disk Manager:  LVM
 
-### Test Configuration
-
-#### Using dd
-
-**Scenario 1**
-
-* 64k block size x 2,000,000 blocks
-* 134 GB of read and write data
-* No operating system caching
-
-| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth |
-|----------:|-----------:|------------------:|--------------------------:|
-| 512 GB | 2 | 1 TB | 110 MB/s / 314 MB/s |
-| 512 GB | 4 | 2 TB | 161 MB/s / 492 MB/s |
-| 512 GB | 8 | 4 TB | 293 MB/s / 530 MB/s |
-
-**Scenario 2**
-
-* 128k block size x 1,000,000 blocks
-* 134 GB of read and write data
-* No operating system caching
-
-| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth |
-|----------:|-----------:|------------------:|--------------------------:|
-| 512 GB | 2 | 1 TB | - |
-| 512 GB | 4 | 2 TB | 265 MB/s / 489 MB/s |
-| 512 GB | 8 | 4 TB | 300 MB/s / 511 MB/s |
-
-#### Using fio
-
-**Scenario 1**
-
-* 64k block size
-* 75% read, 25% write
-* 100 GB of read and write data
-* No operating system caching
-
-| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth | Avg. Read/Write IOPS |
-|----------:|-----------:|------------------:|----------------------------------:|---:|
-| 512 GB | 2 | 1 TB | | |
-| 512 GB | 4 | 2 TB | 419 MB/s / 140 MB/s | 6712 / 2239 |
-| 512 GB | 8 | 4 TB | 559 MB/s / 186 MB/s | 8949 / 2985 |
-
-**Scenario 2**
-
-* 64k block size
-* 25% read, 75% write
-* 100 GB of read and write data
-* No operating system caching
-
-| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth | Avg. Read/Write IOPS |
-|----------:|-----------:|------------------:|----------------------------------:|---:|
-| 512 GB | 2 | 1 TB | | |
-| 512 GB | 4 | 2 TB | 140 MB/s / 420 MB/s | 2236 / 6713 |
-| 512 GB | 8 | 4 TB | 186 MB/s / 560 MB/s | 2985 / 8961 |
-
-**Scenario 3**
-
-* 64k block size
-* 0% read, 100% write
-* 100 GB of read and write data
-* No operating system caching
-
-| Disk Size | # of Disks | Addressable Space | Avg. Write Bandwidth | Avg. Write IOPS |
-|----------:|-----------:|------------------:|----------------------------------:|---:|
-| 512 GB | 2 | 1 TB | | |
-| 512 GB | 4 | 2 TB | 559 MB/s | 8946 |
-| 512 GB | 8 | 4 TB | 746 MB/s | 11937 |
-
-**Scenario 4**
-
-* 64k block size
-* 100% read, 0% write
-* 100 GB of read and write data
-* No operating system caching
-
-| Disk Size | # of Disks | Addressable Space | Avg. Read Bandwidth | Avg. Read IOPS |
-|----------:|-----------:|------------------:|----------------------------------:|---:|
-| 512 GB | 2 | 1 TB | | |
-| 512 GB | 4 | 2 TB | 559 MB/s | 8952 |
-| 512 GB | 8 | 4 TB | 746 MB/s | 11947 |
-
 ### Configure Disks
 
 Update the stripes and size based on your application scenarios.  For example, for OLTP use 64K and for OLAP use 256K.
@@ -174,7 +92,60 @@ sudo lvs --segments
   lv0  vg0 -wi-a-----    4 striped 2.00t
 ```
 
-#### Performance Test with *fio*
+### Performance Test with *fio*
+
+**Scenario 1**
+
+* 64k block size
+* 75% read, 25% write
+* 100 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth | Avg. Read/Write IOPS | Throttled By |
+|----------:|-----------:|------------------:|----------------------------------:|---:|---:|
+| 512 GB | 2 | 1 TB | 216 MB/s / 72 MB/s | 3452 / 1151 | By disk at 150 MB/s & 2300 IOPS per disk |
+| 512 GB | 4 | 2 TB | 419 MB/s / 140 MB/s | 6712 / 2239 | By disk at 150 MB/s & 2300 IOPS per disk |
+| 512 GB | 8 | 4 TB | 559 MB/s / 186 MB/s | 8949 / 2985 | By VM at 768 MB/s |
+
+**Scenario 2**
+
+* 64k block size
+* 25% read, 75% write
+* 100 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth | Avg. Read/Write IOPS | Throttled By |
+|----------:|-----------:|------------------:|----------------------------------:|---:|---:|
+| 512 GB | 2 | 1 TB | 72 MB/s / 216 MB/s | 1150 / 3454 | By disk at 150 MB/s & 2300 IOPS per disk |
+| 512 GB | 4 | 2 TB | 140 MB/s / 420 MB/s | 2236 / 6713 | By disk at 150 MB/s & 2300 IOPS per disk |
+| 512 GB | 8 | 4 TB | 186 MB/s / 560 MB/s | 2985 / 8961 | By VM at 768 MB/s |
+
+**Scenario 3**
+
+* 64k block size
+* 0% read, 100% write
+* 100 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Write Bandwidth | Avg. Write IOPS | Throttled By |
+|----------:|-----------:|------------------:|----------------------------------:|---:|---:|
+| 512 GB | 2 | 1 TB | 287 MB/s | 4605 | By disk at 150 MB/s & 2300 IOPS per disk |
+| 512 GB | 4 | 2 TB | 559 MB/s | 8946 | By disk at 150 MB/s & 2300 IOPS per disk |
+| 512 GB | 8 | 4 TB | 746 MB/s | 11937 | By VM at 768 MB/s |
+
+**Scenario 4**
+
+* 64k block size
+* 100% read, 0% write
+* 100 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Read Bandwidth | Avg. Read IOPS | Throttled By |
+|----------:|-----------:|------------------:|----------------------------------:|---:|---:|
+| 512 GB | 2 | 1 TB | 289 MB/s | 4606 | By disk at 150 MB/s & 2300 IOPS per disk |
+| 512 GB | 4 | 2 TB | 559 MB/s | 8952 | By disk at 150 MB/s & 2300 IOPS per disk |
+| 512 GB | 8 | 4 TB | 746 MB/s | 11947 | By VM at 768 MB/s |
+
 
 Execute test with 75% read & 25% read ratio using 64k block size
 
@@ -207,9 +178,34 @@ Disk stats (read/write):
   sdc: ios=307062/102562, merge=0/10, ticks=2418456/767108, in_queue=3185440, util=97.04%
 ```
 
-#### Performance Test with *dd*
+### Performance Test with *dd*
 
 **This is a single-threaded & sequential-write test. Typical applications will not have sustained writes or reads for long periods of time.  Therefore, the results can be meaningless for your scenario.  This will just give you data on burst limits.**
+
+**Scenario 1**
+
+* 64k block size x 2,000,000 blocks
+* 134 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth |
+|----------:|-----------:|------------------:|--------------------------:|
+| 512 GB | 2 | 1 TB | 110 MB/s / 314 MB/s |
+| 512 GB | 4 | 2 TB | 161 MB/s / 492 MB/s |
+| 512 GB | 8 | 4 TB | 293 MB/s / 530 MB/s |
+
+**Scenario 2**
+
+* 128k block size x 1,000,000 blocks
+* 134 GB of read and write data
+* No operating system caching
+
+| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth |
+|----------:|-----------:|------------------:|--------------------------:|
+| 512 GB | 2 | 1 TB | - |
+| 512 GB | 4 | 2 TB | 265 MB/s / 489 MB/s |
+| 512 GB | 8 | 4 TB | 300 MB/s / 511 MB/s |
+
 
 Launch three SSH sessions.  One will be used to monitor the disk operations using *bwm-ng*.  The other will be used to run performance test cases.
 
