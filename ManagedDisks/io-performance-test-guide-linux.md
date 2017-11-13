@@ -147,8 +147,26 @@ bwm-ng v0.6.1 (probing every 0.500s), press 'h' for help
 
 ```bash
 sudo umount /mnt/data
+```
+
+```bash
 sudo lvremove /dev/vg0/lv0
 
 Do you really want to remove and DISCARD active logical volume vg0/lv0? [y/n]: y
 Logical volume "lv0" successfully removed                                                
+```
+
+```bash
+sudo vgremove vg0
+
+  Volume group "vg0" successfully removed
+```
+
+```bash
+sudo pvremove /dev/sd[cdef]
+
+  Labels on physical volume "/dev/sdc" successfully wiped.
+  Labels on physical volume "/dev/sdd" successfully wiped.
+  Labels on physical volume "/dev/sde" successfully wiped.
+  Labels on physical volume "/dev/sdf" successfully wiped.
 ```
