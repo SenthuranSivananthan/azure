@@ -7,14 +7,19 @@
 
 ### Lessons
 
-1.  Need to balance the maximum IOPS and Network Bandwidth.  You can be throttled by IOPS which will limit the bandwidth you can push through the disks.
+1.  Balance the maximum IOPS allowed on the VM with bandwidth.  You can be throttled by IOPS which will limit the bandwidth you can push through to the disks.
 
-2.  SSD-backed VMs will provide dedicated access to the storage cluster.
+2.  Ensure VM type can support the required IOPS and bandwidth.  Review [Max local disk perf: IOPS / MBps](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) column based on the VM type that you've selected.  The link is for general purpose, so if you can't find your VM, try the other categories of VMs such as Storage Optimized, Memory Optimized, etc.
+
+3.  Achieve higher IOPS and bandwidth by striping multiple disks together.  You can use RAID-0 since Azure Storage will automatically make 3 synchronous copies of your data.  Review [scalability & performance targets](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/premium-storage#scalability-and-performance-targets).
+
+4.  Disable *barriers* if setting the host caching to *None* or *Read-Only*.  See documentation on [premium storage for Linux](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/premium-storage#premium-storage-for-linux-vms)
+
 
 ### Tools Installation
 
 ```bash
-sudo apt-get install bwm-ng
+sudo apt-get install bwm-ng sysstat
 ```
 
 ### VM Configuration
@@ -23,18 +28,19 @@ sudo apt-get install bwm-ng
 * Operating System: Ubuntu Server 17.10
 * Disk Manager:  LVM
 
-### Disk Configuration
+### Test Configuration
 
-| Disk Size | # of Disks | Stripe Size | Read Bandwidth | Write Bandwidth |
-|----------:|-----------:|------------:|---------------:|----------------:|
-| 512 GB | 1 | 64K | | |
-| 512 GB | 2 | 64K | 117 MB/s | 270 MB/s |
-| 512 GB | 4 | 64K | 200 MB/s | 456 MB/s |
-| 512 GB | 8 | 64K | | |
-| 1 TB | 1 | 64K | | |
-| 1 TB | 2 | 64K | | |
-| 1 TB | 4 | 64K | | |
-| 1 TB | 8 | 64K | | |
+**Scenario 1**
+
+* 64k block size x 2,000,000 blocks
+* 134 GB of read and write data
+
+| Disk Size | # of Disks | Addressable Space | 64k blocks - Read/Write Bandwidth |
+|----------:|-----------:|------------------:|----------------------------------:|
+| 512 GB | 1 | 512 GB | |
+| 512 GB | 2 | 1 TB | |
+| 512 GB | 4 | 2 TB | 161 MB/s / 492 MB/s |
+| 512 GB | 8 | 4 TB | |
 
 ### Configure Disks
 
@@ -87,7 +93,7 @@ done
 
 ```
 sudo mkdir /mnt/data
-sudo mount /dev/vg0/lv0 /mnt/data
+sudo mount -o nobarrier /dev/vg0/lv0 /mnt/data
 ```
 
 Validate that the striping is configured properly.
@@ -101,32 +107,40 @@ sudo lvs --segments
 
 ### Performance Test
 
-Launch two SSH sessions.  One will be used to monitor the disk operations using *bwm-ng*.  The other will be used to run performance test cases.
+Launch three SSH sessions.  One will be used to monitor the disk operations using *bwm-ng*.  The other will be used to run performance test cases.
 
 Launch bwm-ng
+
 ```bash
 sudo bwm-ng -i disk -I sdc,sdd,sde,sdf
 ```
 
+Launch iostat
+
+```bash
+sudo watch -n 1 iostat -m
+````
+
 Execute Write Tests
 
 ```bash
-sudo dd if=/dev/zero of=/mnt/data/output bs=64k count=100k;
+sudo dd if=/dev/zero of=/mnt/data/output bs=64k count=2000k;
 
-102400+0 records in
-102400+0 records out
-6710886400 bytes (6.7 GB, 6.2 GiB) copied, 29.9376 s, 224 MB/s
+2048000+0 records in
+2048000+0 records out
+134217728000 bytes (134 GB, 125 GiB) copied, 277.297 s, 484 MB/s
 
 bwm-ng v0.6.1 (probing every 0.500s), press 'h' for help
   input: disk IO type: rate
-  \         iface                   Rx                   Tx                Total
+  |         iface                   Rx                   Tx                Total
   ==============================================================================
-              sdc:           0.00 KB/s       148908.38 KB/s       148908.38 KB/s
-              sdd:           0.00 KB/s       147888.45 KB/s       147888.45 KB/s
-              sde:           0.00 KB/s       148908.38 KB/s       148908.38 KB/s
-              sdf:           0.00 KB/s       148908.38 KB/s       148908.38 KB/s
+              sde:           0.00 KB/s       148183.64 KB/s       148183.64 KB/s
+              sdf:           0.00 KB/s       153293.42 KB/s       153293.42 KB/s
+              sdd:           0.00 KB/s       149205.59 KB/s       149205.59 KB/s
+              sdc:           7.98 KB/s       152271.47 KB/s       152279.44 KB/s
   ------------------------------------------------------------------------------
-            total:           0.00 KB/s       594613.56 KB/s       594613.56 KB/s
+            total:           7.98 KB/s       602954.12 KB/s       602962.06 KB/s  
+            
 
 ```
 
@@ -139,21 +153,20 @@ sudo sh -c "sync && echo 3 > /proc/sys/vm/drop_caches"
 # Execute Read Test
 sudo dd if=/mnt/data/output of=/dev/null bs=64k
 
-102400+0 records in
-102400+0 records out
-6710886400 bytes (6.7 GB, 6.2 GiB) copied, 34.5511 s, 194 MB/s
+2048000+0 records in
+2048000+0 records out
+134217728000 bytes (134 GB, 125 GiB) copied, 835.638 s, 161 MB/s
 
 bwm-ng v0.6.1 (probing every 0.500s), press 'h' for help
   input: disk IO type: rate
-  -         iface                   Rx                   Tx                Total
+  |         iface                   Rx                   Tx                Total
   ==============================================================================
-              sdc:       45732.54 KB/s         3065.87 KB/s        48798.41 KB/s
-              sdd:       46243.52 KB/s         3065.87 KB/s        49309.38 KB/s
-              sde:       45732.54 KB/s         3065.87 KB/s        48798.41 KB/s
-              sdf:       45732.54 KB/s         3065.87 KB/s        48798.41 KB/s
+              sde:       37389.22 KB/s            0.00 KB/s        37389.22 KB/s
+              sdf:       37357.29 KB/s            0.00 KB/s        37357.29 KB/s
+              sdd:       37045.91 KB/s            0.00 KB/s        37045.91 KB/s
+              sdc:       37301.40 KB/s            0.00 KB/s        37301.40 KB/s
   ------------------------------------------------------------------------------
-            total:      183441.12 KB/s        12263.47 KB/s       195704.59 KB/s
-
+            total:      149093.81 KB/s            0.00 KB/s       149093.81 KB/s
 ```
 
 ### Clean up
