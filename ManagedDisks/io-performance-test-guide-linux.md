@@ -19,7 +19,7 @@
 ### Tools Installation
 
 ```bash
-sudo apt-get install bwm-ng sysstat
+sudo apt-get install bwm-ng fio
 ```
 
 ### VM Configuration
@@ -42,11 +42,21 @@ sudo apt-get install bwm-ng sysstat
 * 134 GB of read and write data
 * No operating system caching
 
+**Using dd**
+
 | Disk Size | # of Disks | Addressable Space | 64k blocks - Avg. Read/Write Bandwidth | 128k blocks - Avg. Read/Write Bandwidth | Notes |
 |----------:|-----------:|------------------:|----------------------------------:|------:|---:|
 | 512 GB | 2 | 1 TB | 110 MB/s / 314 MB/s | - | - |
 | 512 GB | 4 | 2 TB | 161 MB/s / 492 MB/s | 265 MB/s / 489 MB/s  | Throttling at 150 MB/s (Disk limit) |
 | 512 GB | 8 | 4 TB | 293 MB/s / 530 MB/s | 300 MB/s / 511 MB/s  | Bandwidth Throttled at 768 MB/s (VM limit), expect pauses where data is not written to disks |
+
+**Using fio**
+
+| Disk Size | # of Disks | Addressable Space | 64k blocks - Avg. Read/Write Bandwidth | 128k blocks - Avg. Read/Write Bandwidth | Notes |
+|----------:|-----------:|------------------:|----------------------------------:|------:|---:|
+| 512 GB | 2 | 1 TB | | | |
+| 512 GB | 4 | 2 TB | | | |
+| 512 GB | 8 | 4 TB | | | |
 
 ### Configure Disks
 
@@ -111,7 +121,17 @@ sudo lvs --segments
   lv0  vg0 -wi-a-----    4 striped 2.00t
 ```
 
-### Performance Test
+### Performance Test with *fio*
+
+Execute test with 75% read & 25% read ratio using 64k block size
+
+```bash
+sudo fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=AzureDiskIO --filename=/mnt/data/output --bs=64k --iodepth=64 --size=100G --readwrite=randrw --rwmixread=75
+```
+
+### Performance Test with *dd*
+
+**This is a single-threaded & sequential-write test. Typical applications will not have sustained writes or reads for long periods of time.  Therefore, the results can be meaningless for your scenario.  This will just give you data on burst limits.**
 
 Launch three SSH sessions.  One will be used to monitor the disk operations using *bwm-ng*.  The other will be used to run performance test cases.
 
@@ -171,6 +191,32 @@ bwm-ng v0.6.1 (probing every 0.500s), press 'h' for help
               sdc:       37301.40 KB/s            0.00 KB/s        37301.40 KB/s
   ------------------------------------------------------------------------------
             total:      149093.81 KB/s            0.00 KB/s       149093.81 KB/s
+
+
+AzureDiskIO: (g=0): rw=randrw, bs=64K-64K/64K-64K/64K-64K, ioengine=libaio, iodepth=64
+fio-2.16
+Starting 1 process
+Jobs: 1 (f=1): [m(1)] [100.0% done] [371.5MB/119.2MB/0KB /s] [5942/1919/0 iops] [eta 00m:00s]
+AzureDiskIO: (groupid=0, jobs=1): err= 0: pid=14897: Mon Nov 13 20:12:32 2017
+  read : io=76782MB, bw=412418KB/s, iops=6444, runt=190643msec
+  write: io=25618MB, bw=137603KB/s, iops=2150, runt=190643msec
+  cpu          : usr=3.09%, sys=17.43%, ctx=719292, majf=0, minf=9
+  IO depths    : 1=0.1%, 2=0.1%, 4=0.1%, 8=0.1%, 16=0.1%, 32=0.1%, >=64=100.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.1%, >=64=0.0%
+     issued    : total=r=1228510/w=409890/d=0, short=r=0/w=0/d=0, drop=r=0/w=0/d=0
+     latency   : target=0, window=0, percentile=100.00%, depth=64
+
+Run status group 0 (all jobs):
+   READ: io=76782MB, aggrb=412418KB/s, minb=412418KB/s, maxb=412418KB/s, mint=190643msec, maxt=190643msec
+  WRITE: io=25618MB, aggrb=137602KB/s, minb=137602KB/s, maxb=137602KB/s, mint=190643msec, maxt=190643msec
+
+Disk stats (read/write):
+    dm-0: ios=1228510/410004, merge=0/0, ticks=9179888/2910200, in_queue=12091056, util=100.00%, aggrios=307126/102491, aggrmerge=1/9, aggrticks=2294632/727360, aggrin_queue=3021878, aggrutil=98.46%
+  sdf: ios=307033/102586, merge=0/11, ticks=2846652/911264, in_queue=3757768, util=98.46%
+  sdd: ios=306924/102689, merge=5/8, ticks=1976448/620572, in_queue=2596992, util=97.63%
+  sde: ios=307485/102130, merge=1/8, ticks=1936972/610496, in_queue=2547312, util=98.02%
+  sdc: ios=307062/102562, merge=0/10, ticks=2418456/767108, in_queue=3185440, util=97.04%
 ```
 
 ### Clean up
