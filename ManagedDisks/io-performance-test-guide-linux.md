@@ -51,8 +51,8 @@ sudo apt-get install bwm-ng fio
 * 134 GB of read and write data
 * No operating system caching
 
-| Disk Size | # of Disks | Addressable Space | 128k blocks - Avg. Read/Write Bandwidth |
-|----------:|-----------:|------------------:|----------------------------------------:|
+| Disk Size | # of Disks | Addressable Space | Avg. Read/Write Bandwidth |
+|----------:|-----------:|------------------:|--------------------------:|
 | 512 GB | 2 | 1 TB | - |
 | 512 GB | 4 | 2 TB | 265 MB/s / 489 MB/s |
 | 512 GB | 8 | 4 TB | 300 MB/s / 511 MB/s |
