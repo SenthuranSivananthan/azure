@@ -146,6 +146,19 @@ sudo lvs --segments
 | 512 GB | 4 | 2 TB | 559 MB/s | 8952 | By disk at 150 MB/s & 2300 IOPS per disk |
 | 512 GB | 8 | 4 TB | 746 MB/s | 11947 | By VM at 768 MB/s |
 
+**Scenario 5 - Different VM SKUs**
+
+* 64k block size
+* 75% read, 25% write
+* 512 GB disk x 8 disks = 4 TB
+* 100 GB of read and write data
+* No operating system caching
+
+| VM SKU | Expected VM I/O Performance | Avg. Read/Write Bandwidth | Avg. Read/Write IOPS | Throttled By |
+|----------:|---:|-----------:|------------------:|----------------------------------:|
+| DS5_v2 | (51,200 IOPS / 768 MB/s) | 559 MB/s / 186 MB/s | 8949 / 2985 | By VM at 768 MB/s |
+| D32s_v3 | (51,200 IOPS / 768 MB/s) | 560 MB/s / 186 MB/s  | 8919 / 2976 | By VM at 768 MB/s |
+| D64s_v3 | (80,000 IOPS / 1200 MB/s) | 762 MB/s / 254 MB/s  | 12194 / 4068 | No throttling, 1200 MB/s on VM, 1200 MB/s on Disks |
 
 Execute test with 75% read & 25% read ratio using 64k block size
 
