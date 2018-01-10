@@ -1,0 +1,15 @@
+{
+  "name": "docker_frontend_service",
+  "version": "1.0.0",
+  "description": "Node.js on Docker",
+  "author": "Senthuran Sivananthan <senthuran.sivananthan@microsoft.com>",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.13.3",
+    "request": "^2.81.0"
+  }
+}
