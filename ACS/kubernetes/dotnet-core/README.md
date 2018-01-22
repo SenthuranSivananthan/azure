@@ -13,6 +13,19 @@ dotnet publish
 ```
 
 ### Build Docker Image
+
+```Dockerfile
+FROM microsoft/aspnetcore
+
+WORKDIR /app
+COPY ./app/bin/Debug/netcoreapp2.0/publish .
+
+ENV ASPNETCORE_URLS http://+:80
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "code.dll"]
+```
+
 ```bash
 docker build -t dotnetwebapi .
 ```
@@ -52,6 +65,52 @@ docker tag dotnetwebapi dotnetcoreacr.azurecr.io/dotnetwebapi
 
 # Push to ACR
 docker push dotnetcoreacr.azurecr.io/dotnetwebapi
+```
+
+### Create YAML file: kubernetes.yaml
+
+This definition will create 1 POD with 5 replicas.  The replicas will be load balanced via Service using an Azure Load Balancer & Public IP. 
+
+```yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapi-lb
+spec:
+  selector:
+    app: webapi_backend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webapi-deployment
+spec:
+  replicas: 5
+  revisionHistoryLimit: 2
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: webapi_backend
+    spec:
+      containers:
+      - name: webapi-container
+        image: dotnetcoreacr.azurecr.io/dotnetwebapi:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+        - name: acr
 ```
 
 ### Connect to Kubernetes & Deploy Image

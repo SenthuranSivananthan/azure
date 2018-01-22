@@ -16,7 +16,7 @@ kind: Deployment
 metadata:
   name: webapi-deployment
 spec:
-  replicas: 1
+  replicas: 5
   revisionHistoryLimit: 2
   minReadySeconds: 10
   strategy:
