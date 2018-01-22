@@ -1,5 +1,7 @@
 # Deploy ASP.NET Core 2.0 on Kubernetes
 
+![Logo](docs/image.PNG "Logo")
+
 ## Create Application & Test Application
 
 ### New Application
