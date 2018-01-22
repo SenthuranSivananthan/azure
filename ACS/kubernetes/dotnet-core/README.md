@@ -36,7 +36,7 @@ curl http://localhost:32770/api/values
 az group create -n dotnetcore -l canadacentral
 
 # Create Azure Container Registry
-az acr create -n dotnetcoreacr -l eastus -g dotnetcore --sku Standard --admin-enabled
+az acr create -n dotnetcoreacr -l canadacentral -g dotnetcore --sku Standard --admin-enabled
 
 # Create ACS Cluster
 az acs create -n ss -g dotnetcore --orchestrator-type Kubernetes --orchestrator-version 1.7.9
