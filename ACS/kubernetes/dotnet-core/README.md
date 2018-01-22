@@ -118,6 +118,7 @@ spec:
 ### Connect to Kubernetes & Deploy Image
 
 ```bash
+# Download Kubernetes credentials
 az acs kubernetes get-credentials -n ss -g dotnetcore
 
 # Validate connectivity
