@@ -1,0 +1,18 @@
+		<set-header name="member_name" exists-action="override">
+			<value>
+            @{
+                var authToken = context.Request.Headers.GetValueOrDefault("Authorization", "NONE");
+
+                if (authToken != null)
+                {
+                    var jwt = authToken.AsJwt();
+                    if (jwt != null)
+                    {
+                        return jwt.Claims.GetValueOrDefault("name");
+                    }
+                }    
+                
+                return null;
+            }
+         </value>
+		</set-header>
