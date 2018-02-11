@@ -1,0 +1,28 @@
+{
+    "properties": {
+        "displayName": "Allowed locations",
+        "policyType": "BuiltIn",
+        "description": "This policy enables you to restrict the locations your organization can specify when deploying resources. Use to enforce your geo-compliance requirements.",
+        "parameters": {
+            "listOfAllowedLocations": {
+                "type": "Array",
+                "metadata": {
+                    "description": "The list of locations that can be specified when deploying resources.",
+                    "strongType": "location",
+                    "displayName": "Allowed locations"
+                }
+            }
+        },
+        "policyRule": {
+            "if": {
+                "not": {
+                    "field": "location",
+                    "in": "[parameters('listOfAllowedLocations')]"
+                }
+            },
+            "then": {
+                "effect": "audit"
+            }
+        }
+    }
+}
