@@ -1,8 +1,8 @@
 {
     "name": "audit-sql-db-tde-status",
     "properties": {
-        "displayName": "Audit transparent data encryption status for SQL databases",
-        "description": "Audit transparent data encryption status for SQL databases",
+        "displayName": "Audit TDE status for SQL databases",
+        "description": "Audit TDE status for SQL databases",
         "parameters": {},
         "policyRule": {
             "if": {
@@ -10,19 +10,19 @@
                 "equals": "Microsoft.SQL/servers/databases"
             },
             "then": {
+                "effect": "AuditIfNotExists",
                 "details": {
                     "type": "Microsoft.SQL/servers/databases/transparentDataEncryption",
                     "name": "current",
                     "existenceCondition": {
                         "allOf": [
                             {
-                                "field": "Microsoft.Sql/transparentDataEncryption.status",
+                                "field": "Microsoft.SQL/transparentDataEncryption.status",
                                 "equals": "enabled"
                             }
                         ]
                     }
-                },
-                "effect": "audit"
+                }
             }
         }
     }
