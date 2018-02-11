@@ -1,0 +1,31 @@
+{
+    "properties": {
+        "mode": "all",
+        "displayName": "Audit for Service Endpoints on SQL Databases",
+        "description": "Audit for Service Endpoints on SQL Databases",
+        "policyRule": {
+            "if": {
+                "field": "type",
+                "equals": "Microsoft.SQL/servers"
+            },
+            "then": {
+                "details": {
+                    "type": "Microsoft.SQL/servers/virtualNetworkRules",
+                    "existenceCondition": {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Sql/virtualNetworkRules[*].id",
+                                "exists": false
+                            }
+                        ]
+                    }
+                },
+                "effect": "audit"
+            }
+        },
+        "parameters": {},
+        "metadata": {
+            "category": "Databases"
+        }
+    }
+}

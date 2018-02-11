@@ -1,0 +1,29 @@
+{
+    "properties": {
+        "displayName": "Audit SQL Server Level Audit Setting",
+        "description": "Audit SQL Server Level Audit Setting",
+        "parameters": {
+        },
+        "policyRule": {
+            "if": {
+                "field": "type",
+                "equals": "Microsoft.SQL/servers"
+            },
+            "then": {
+                "details": {
+                    "type": "Microsoft.SQL/servers/auditingSettings",
+                    "name": "current",
+                    "existenceCondition": {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Sql/auditingSettings.state",
+                                "equals": "enabled"
+                            }
+                        ]
+                    }
+                },
+                "effect": "audit"
+            }
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "name": "audit-sql-db-threat-detection",
+    "properties": {
+        "displayName": "Audit DB level threat detection for SQL databases",
+        "description": "Audit DB level threat detection for SQL databases",
+        "policyRule": {
+            "if": {
+                "field": "type",
+                "equals": "Microsoft.SQL/servers/databases"
+            },
+            "then": {
+                "details": {
+                    "type": "servers/databases/securityAlertPolicies",
+                    "name": "default",
+                    "existenceCondition": {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Sql/securityAlertPolicies.state",
+                                "equals": "enabled"
+                            }
+                        ]
+                    }
+                },
+                "effect": "audit"
+            }
+        }
+    }
+}

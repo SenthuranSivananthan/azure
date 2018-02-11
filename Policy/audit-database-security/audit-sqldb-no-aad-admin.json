@@ -1,0 +1,25 @@
+{
+    "properties": {
+        "displayName": "Aduit If there is no AAD Admin assigned to this SQL server",
+        "description": "Aduit If there is no AAD Admin assigned to this SQL server",
+        "parameters": {
+           
+        },
+        "policyRule": {
+            "if": {
+                "field": "type",
+                "equals": "Microsoft.SQL/servers"
+            },
+            "then": {
+                "details": {
+                    "type": "Microsoft.SQL/servers/administrators",
+                    "existenceCondition": {
+                        "field": "name",
+                        "likes": "*"
+                    }
+                },
+                "effect": "audit"
+            }
+        }
+    }
+}
