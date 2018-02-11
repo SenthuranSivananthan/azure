@@ -1,4 +1,4 @@
-Policies to Audit Virtual Machines & Virtual Machine Scale Sets
+## Policies to Audit Virtual Machines & Virtual Machine Scale Sets
 
 **These policies are provided under MIT license.  Please test them in your environment and customize as needed**
 
