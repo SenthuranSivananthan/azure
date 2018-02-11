@@ -1,0 +1,27 @@
+{
+    "properties": {
+        "displayName": "Audit hybrid use benefit for Windows VM",
+        "description": "Audit hybrid use benefit for Windows VM",
+        "parameters": {},
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "in": [
+                            "Microsoft.Compute/virtualMachines",
+                            "Microsoft.Compute/VirtualMachineScaleSets"
+                        ]
+                    },
+                    {
+                        "field": "Microsoft.Compute/licenseType",
+                        "equals": "Windows_Server"
+                    }
+                ]
+            },
+            "then": {
+                "effect": "audit"
+            }
+        }
+    }
+}

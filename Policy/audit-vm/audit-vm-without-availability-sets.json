@@ -1,0 +1,24 @@
+{
+    "properties": {
+        "mode": "all",
+        "displayName": "Audit for VMs that are not in an availability set",
+        "description": "Audit for VMs that are not in an availability set",
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Compute/virtualMachines"
+                    },
+                    {
+                        "field": "Microsoft.Compute/virtualMachines/availabilitySet.id",
+                        "exists": false
+                    }
+                ]
+            },
+            "then": {
+                "effect": "audit"
+            }
+        }
+    }
+}
