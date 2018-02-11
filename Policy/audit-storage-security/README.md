@@ -1,4 +1,4 @@
-## Policies to Audit Storage Accounts
+## Policies to audit Storage Accounts
 
 **These policies are provided under MIT license.  Please test them in your environment and customize as needed.**
 
