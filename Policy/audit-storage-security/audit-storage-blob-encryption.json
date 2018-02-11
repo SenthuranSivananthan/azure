@@ -1,0 +1,27 @@
+{
+    "properties": {
+        "mode": "all",
+        "parameters": {},
+        "displayName": "Audit server side encryption for Blob Storage",
+        "description": "Monitor whether server side encryption is turned on for Blob Storage",
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Storage/storageAccounts"
+                    },
+                    {
+                        "not": {
+                            "field": "Microsoft.Storage/storageAccounts/enableBlobEncryption",
+                            "equals": "true"
+                        }
+                    }
+                ]
+            },
+            "then": {
+                "effect": "audit"
+            }
+        }
+    }
+}

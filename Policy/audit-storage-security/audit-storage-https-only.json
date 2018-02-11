@@ -1,0 +1,27 @@
+{
+    "properties": {
+        "mode": "all",
+        "parameters": {},
+        "displayName": "Audit https-only traffic for storage accounts",
+        "description": "Audit https-only traffic for storage accounts",
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Storage/storageAccounts"
+                    },
+                    {
+                        "not": {
+                            "field": "Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly",
+                            "equals": "true"
+                        }
+                    }
+                ]
+            },
+            "then": {
+                "effect": "audit"
+            }
+        }
+    }
+}

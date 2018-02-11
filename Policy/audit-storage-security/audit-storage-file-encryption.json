@@ -1,0 +1,27 @@
+{
+    "properties": {
+        "mode": "all",
+        "parameters": {},
+        "displayName": "Audit server side encryption for File Storage",
+        "description": "Monitor whether server side encryption is turned on for File Storage",
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Storage/storageAccounts"
+                    },
+                    {
+                        "not": {
+                            "field": "Microsoft.Storage/storageAccounts/enableFileEncryption",
+                            "equals": "true"
+                        }
+                    }
+                ]
+            },
+            "then": {
+                "effect": "audit"
+            }
+        }
+    }
+}
