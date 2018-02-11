@@ -6,3 +6,4 @@
 | ------------- |-------------| -----  |
 | audit-billing-tag.json | Monitor for missing billing tag | Done |
 | audit-deployment-regions.json | Monitor for deployments in regions that are not sanctioned by your organization | Done |
+| audit-resources-types.json | Monitor for resource types that are not sanctioned by your organization | Done |
