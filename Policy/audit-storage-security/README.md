@@ -7,5 +7,5 @@
 | audit-storage-blob-encryption.json | Monitor server-side encryption at REST for Blobs | Done |
 | audit-storage-file-encryption.json | Monitor server-side encryption at REST for Files | Done |
 | audit-storage-https-only.json | Monitor for traffic to be over HTTPS for Storage Accounts | Done |
-| audit-service-endpoints-storage.json | Monitor for Storage Accounts without Service Endpoint | Done |
+| audit-storage-service-endpoints.json | Monitor for Storage Accounts without Service Endpoint | Done |
 
