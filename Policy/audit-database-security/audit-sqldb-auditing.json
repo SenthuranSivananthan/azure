@@ -1,17 +1,17 @@
 {
     "properties": {
-        "displayName": "Audit SQL Server Level Audit Setting",
-        "description": "Audit SQL Server Level Audit Setting",
-        "parameters": {
-        },
+        "displayName": "Audit SQL Database Audit Setting",
+        "description": "Audit SQL Database Audit Setting",
+        "parameters": {},
         "policyRule": {
             "if": {
                 "field": "type",
-                "equals": "Microsoft.SQL/servers"
+                "equals": "Microsoft.SQL/servers/databases"
             },
             "then": {
+                "effect": "AuditIfNotExists",
                 "details": {
-                    "type": "Microsoft.SQL/servers/auditingSettings",
+                    "type": "Microsoft.SQL/servers/databases/auditingSettings",
                     "name": "current",
                     "existenceCondition": {
                         "allOf": [
@@ -21,8 +21,7 @@
                             }
                         ]
                     }
-                },
-                "effect": "audit"
+                }
             }
         }
     }
