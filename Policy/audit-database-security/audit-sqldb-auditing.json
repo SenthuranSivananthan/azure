@@ -5,8 +5,18 @@
         "parameters": {},
         "policyRule": {
             "if": {
-                "field": "type",
-                "equals": "Microsoft.SQL/servers/databases"
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.SQL/servers/databases"
+                    },
+                    {
+                        "not": {
+                            "field": "name",
+                            "equals": "master"
+                        }
+                    }
+                ]
             },
             "then": {
                 "effect": "AuditIfNotExists",
