@@ -7,12 +7,12 @@ $VMResourceGroup = "demo-packet-capture"
 $StorageAccountId = "/subscriptions/0000000-0000-0000-0000-000000000000/resourceGroups/demo-packet-capture/providers/Microsoft.Storage/storageAccounts/packetcapture"
 
 # Network Watcher
-$NWResourceGroup = "NetworkWatcherRG"
+$NWResourceGroup = "---SET-RG-FOR-NETWROK-WATCHER---"
 $NWNamePrefix = "NetworkWatcher_"
 
 $PacketCaptureDurationInSeconds = 60
 
-$PacketCaptureNamePrefix = "LOS"
+$PacketCaptureNamePrefix = "---CHANGE-PREFIX---"
 $PacketCaptureNameSuffix = $(get-date -f yyyy-MM-dd-HHmmss)
 $VMs = Get-AzureRmVM -ResourceGroup $VMResourceGroup
 
