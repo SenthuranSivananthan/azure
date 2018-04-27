@@ -16,14 +16,14 @@ $PacketCaptureNamePrefix = "---CHANGE-PREFIX---"
 $PacketCaptureNameSuffix = $(get-date -f yyyy-MM-dd-HHmmss)
 $VMs = Get-AzureRmVM -ResourceGroup $VMResourceGroup
 
+$NetworkWatcher = Get-AzureRmNetworkWatcher -Name $NWName -ResourceGroupName $NWResourceGroup
+
 ForEach ($VM in $VMs)
 {
     $NWName = $NWNamePrefix + $VM.Location
     $PacketCaptureName = $PacketCaptureNamePrefix + "-" + $VM.Name + "-" + $PacketCaptureNameSuffix
 
-    $networkWatcher = Get-AzureRmNetworkWatcher -Name $NWName -ResourceGroupName $NWResourceGroup
-
     #Initiate packet capture on the VM that fired the alert
     Write-Output "Initiating Packet Capture on $($VM.Name)"
-    New-AzureRmNetworkWatcherPacketCapture -NetworkWatcher $networkWatcher -TargetVirtualMachineId $VM.Id -PacketCaptureName $PacketCaptureName -StorageAccountId $StorageAccountId -TimeLimitInSeconds $PacketCaptureDurationInSeconds
+    New-AzureRmNetworkWatcherPacketCapture -NetworkWatcher $NetworkWatcher -TargetVirtualMachineId $VM.Id -PacketCaptureName $PacketCaptureName -StorageAccountId $StorageAccountId -TimeLimitInSeconds $PacketCaptureDurationInSeconds
 }
