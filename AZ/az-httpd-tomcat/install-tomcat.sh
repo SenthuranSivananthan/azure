@@ -5,4 +5,4 @@ sudo apt-get -y upgrade
 
 sudo apt-get install -y default-jre tomcat8
 
-uname -n > /usr/share/tomcat8-root/default_root/server.txt
+uname -n > /var/lib/tomcat8/webapps/ROOT/server.txt
