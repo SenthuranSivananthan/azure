@@ -1,0 +1,402 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dmzNumberOfVMs": {
+            "type": "int",
+            "minValue": 1
+        },
+        "appNumberOfVMs": {
+            "type": "int",
+            "minValue": 1
+        },
+        "adminUsername": {
+            "type": "string",
+            "minLength": 2
+        },
+        "adminSshKey": {
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "dmz": {
+            "vm": {
+                "count": "[parameters('dmzNumberOfVMs')]",
+                "sku": "Standard_DS2_v2",
+                "username": "[parameters('adminUsername')]",
+                "sshkey": "[parameters('adminSshKey')]"
+            }
+        },
+        "app": {
+            "vm": {
+                "count": "[parameters('appNumberOfVMs')]",
+                "sku": "Standard_DS2_v2",
+                "username": "[parameters('adminUsername')]",
+                "sshkey": "[parameters('adminSshKey')]"
+            }
+        },
+        "appVMLastIp": "[concat('10.0.', add(1, div(add(3,variables('app').vm.count), 255)), '.', mod(add(3,variables('app').vm.count), 255))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "nsg-dmz",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Port_80",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/networkSecurityGroups/nsg-dmz"
+            ],
+            "apiVersion": "2017-10-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "vnet",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "dmz",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-dmz')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "app",
+                        "properties": {
+                            "addressPrefix": "10.0.1.0/24"
+                        }
+                    },
+                    {
+                        "name": "db",
+                        "properties": {
+                            "addressPrefix": "10.0.2.0/24"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "dmz-lb-pip",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/publicIPAddresses/dmz-lb-pip"
+            ],
+            "name": "dmz-lb",
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "backendAddressPools": [
+                    {
+                        "name": "dmz"
+                    }
+                ],
+                "frontendIPConfigurations": [
+                    {
+                        "name": "dmz-frontend",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses','dmz-lb-pip')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "probe-80",
+                        "properties": {
+                            "protocol": "tcp",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "lbrule-port-80",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','dmz-lb'), '/frontendIPConfigurations/dmz-frontend')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','dmz-lb'), '/backendAddressPools/dmz')]"
+                            },
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','dmz-lb'), '/probes/probe-80')]"
+                            },
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "frontendPort": 80,
+                            "backendPort": 80
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/virtualNetworks/vnet",
+                "Microsoft.Network/loadBalancers/dmz-lb"
+            ],
+            "copy": {
+                "name": "nicLoop",
+                "count": "[variables('dmz').vm.count]"
+            },
+            "apiVersion": "2017-10-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat('dmz-vm-nic-', copyIndex(1))]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "primary": true,
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', 'vnet'), '/subnets/dmz')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'dmz-lb'), '/backendAddressPools/dmz')]"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/dmz-vm-nic-',copyIndex(1))]"
+            ],
+            "copy": {
+                "name": "vmLoop",
+                "count": "[variables('dmz').vm.count]"
+            },
+            "apiVersion": "2017-12-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat('dmz-vm-', copyIndex(1))]",
+            "location": "[resourceGroup().location]",
+            "zones": [
+                "[add(1,mod(copyIndex(), 3))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('dmz').vm.sku]"
+                },
+                "osProfile": {
+                    "computerName": "[concat('dmz-vm-', copyIndex(1))]",
+                    "adminUsername": "[variables('dmz').vm.username]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/',variables('dmz').vm.username,'/.ssh/authorized_keys')]",
+                                    "keyData": "[variables('dmz').vm.sshkey]"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "16.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat('dmz-vm-', copyIndex(1), '-os')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('dmz-vm-nic-', copyIndex(1)))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "name": "[concat('cse-', copyIndex(1))]",
+                    "type": "extensions",
+                    "location": "[resourceGroup().location]",
+                    "apiVersion": "2015-06-15",
+                    "dependsOn": [
+                        "[concat('Microsoft.Compute/virtualMachines/', 'dmz-vm-', copyIndex(1))]"
+                    ],
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "https://raw.githubusercontent.com/SenthuranSivananthan/azure/master/AZ/az-httpd-tomcat/install-apache2.sh"
+                            ],
+                            "commandToExecute": "[concat('./install-apache2.sh 10.0.1.4 ', variables('appVMLastIp'))]"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/virtualNetworks/vnet"
+            ],
+            "copy": {
+                "name": "nicLoop",
+                "count": "[variables('app').vm.count]"
+            },
+            "apiVersion": "2017-10-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat('app-vm-nic-', copyIndex(1))]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "primary": true,
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', 'vnet'), '/subnets/app')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/app-vm-nic-',copyIndex(1))]"
+            ],
+            "copy": {
+                "name": "vmLoop",
+                "count": "[variables('app').vm.count]"
+            },
+            "apiVersion": "2017-12-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat('app-vm-', copyIndex(1))]",
+            "location": "[resourceGroup().location]",
+            "zones": [
+                "[add(1,mod(copyIndex(), 3))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('app').vm.sku]"
+                },
+                "osProfile": {
+                    "computerName": "[concat('app-vm-', copyIndex(1))]",
+                    "adminUsername": "[variables('app').vm.username]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/',variables('app').vm.username,'/.ssh/authorized_keys')]",
+                                    "keyData": "[variables('app').vm.sshkey]"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "16.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat('app-vm-', copyIndex(1), '-os')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('app-vm-nic-', copyIndex(1)))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "name": "[concat('cse-', copyIndex(1))]",
+                    "type": "extensions",
+                    "location": "[resourceGroup().location]",
+                    "apiVersion": "2015-06-15",
+                    "dependsOn": [
+                        "[concat('Microsoft.Compute/virtualMachines/', 'app-vm-', copyIndex(1))]"
+                    ],
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "https://raw.githubusercontent.com/SenthuranSivananthan/azure/master/AZ/az-httpd-tomcat/install-tomcat.sh"
+                            ],
+                            "commandToExecute": "sh install-tomcat.sh"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {}
+}
