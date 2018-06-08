@@ -1,0 +1,353 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sshUsername": {
+            "type": "string"
+        },
+        "sshKey": {
+            "type": "securestring"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "name": "bastion",
+            "type": "Microsoft.Network/applicationSecurityGroups",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]"
+        },
+        {
+            "name": "appServers",
+            "type": "Microsoft.Network/applicationSecurityGroups",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]"
+        },
+        {
+            "name": "databaseServers",
+            "type": "Microsoft.Network/applicationSecurityGroups",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]"
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/applicationSecurityGroups/bastion",
+                "Microsoft.Network/applicationSecurityGroups/appServers",
+                "Microsoft.Network/applicationSecurityGroups/databaseServers"
+            ],
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "nsg",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Allow_SSH_Bastion",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "destinationApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'bastion')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "Allow_SSH_Bastion_To_App",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound",
+                            "sourceApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'bastion')]"
+                                }
+                            ],
+                            "destinationApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'appServers')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "Allow_SSH_Bastion_To_DBServer",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound",
+                            "sourceApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'bastion')]"
+                                }
+                            ],
+                            "destinationApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'databaseServers')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "Allow_App_To_DBServer",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3306",
+                            "access": "Allow",
+                            "priority": 200,
+                            "direction": "Inbound",
+                            "sourceApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'appServers')]"
+                                }
+                            ],
+                            "destinationApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'databaseServers')]"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/networkSecurityGroups/nsg"
+            ],
+            "apiVersion": "2017-10-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "vnet",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "bastion",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "app",
+                        "properties": {
+                            "addressPrefix": "10.0.1.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "database",
+                        "properties": {
+                            "addressPrefix": "10.0.2.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "bastion-pip",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/applicationSecurityGroups/bastion",
+                "Microsoft.Network/publicIPAddresses/bastion-pip",
+                "Microsoft.Network/virtualNetworks/vnet"
+            ],
+            "apiVersion": "2017-10-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "bastion-nic",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "primary": true,
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', 'vnet'), '/subnets/bastion')]"
+                            },
+                            "applicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'bastion')]"
+                                }
+                            ],
+                            "publicIPAddress":{
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'bastion-pip')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/networkInterfaces/bastion-nic"
+            ],
+            "apiVersion": "2017-12-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "bastion",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2_v2"
+                },
+                "osProfile": {
+                    "computerName": "bastion",
+                    "adminUsername": "[parameters('sshUsername')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/', parameters('sshUsername'), '/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('sshKey')]"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "16.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "bastion-os",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'bastion-nic')]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/applicationSecurityGroups/appServers",
+                "Microsoft.Network/virtualNetworks/vnet"
+            ],
+            "apiVersion": "2017-10-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "appserver-01-nic",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "primary": true,
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', 'vnet'), '/subnets/app')]"
+                            },
+                            "applicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'appServers')]"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/networkInterfaces/appserver-01-nic"
+            ],
+            "apiVersion": "2017-12-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "appserver-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2_v2"
+                },
+                "osProfile": {
+                    "computerName": "apserver-01",
+                    "adminUsername": "[parameters('sshUsername')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/', parameters('sshUsername'), '/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('sshKey')]"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "16.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "appserver-01-os",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'appserver-01-nic')]"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
