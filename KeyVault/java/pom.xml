@@ -9,6 +9,7 @@
 
 	<name>akv</name>
 	<url>http://maven.apache.org</url>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -57,9 +58,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.microsoft.aad</groupId>
+			<groupId>com.microsoft.azure</groupId>
 			<artifactId>adal4j</artifactId>
-			<version>0.0.2</version>
+			<version>1.6.0</version>
 		</dependency>
 
 		<dependency>
