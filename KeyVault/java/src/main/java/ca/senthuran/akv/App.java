@@ -39,7 +39,8 @@ public class App {
 		// WrapAndUnwrap_RSA_OAEP(credentials, vaultUrl);
 		// EncryptAndDecrypt_RSA1_5(credentials, vaultUrl);
 		// EncryptAndDecrypt_RSA_OAEP(credentials, vaultUrl);
-		DisplayPublicKey(credentials, vaultUrl);
+		// DisplayPublicKey(credentials, vaultUrl);
+		DisplayPublicKeyHSM(credentials, vaultUrl);
 	}
 
 	public static void DisplayPublicKey(KeyVaultCredentials credentials, String vaultUrl)
@@ -50,6 +51,27 @@ public class App {
 		// create a key
 		// if the key exists, then a new version is created
 		Builder keyRequestBuilder = new Builder(vaultUrl, "SenthuranKey", JsonWebKeyType.RSA);
+		CreateKeyRequest createKeyRequest = keyRequestBuilder.build();
+		KeyBundle bundle = kvc.createKey(createKeyRequest);
+
+		String keyId = bundle.keyIdentifier().identifier();
+		bundle = kvc.getKey(keyId);
+
+		KeyPair keyPair = bundle.key().toRSA();
+		PublicKey publicKey = keyPair.getPublic();
+
+		System.out.println(publicKey.getAlgorithm()); // prints RSA
+		System.out.println(publicKey.getFormat()); // prints X.509
+	}
+
+	public static void DisplayPublicKeyHSM(KeyVaultCredentials credentials, String vaultUrl)
+	{
+		KeyVaultClient kvc = new KeyVaultClient(credentials);
+		String mySecretData = "HelloWorld!";
+
+		// create a key
+		// if the key exists, then a new version is created
+		Builder keyRequestBuilder = new Builder(vaultUrl, "SenthuranKey", JsonWebKeyType.RSA_HSM);
 		CreateKeyRequest createKeyRequest = keyRequestBuilder.build();
 		KeyBundle bundle = kvc.createKey(createKeyRequest);
 
