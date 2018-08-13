@@ -1,5 +1,8 @@
 package ca.senthuran.akv;
 
+import java.security.KeyPair;
+import java.security.PublicKey;
+
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.keyvault.models.KeyBundle;
@@ -34,8 +37,30 @@ public class App {
 
 		// WrapAndUnwrap_RSA1_5(credentials, vaultUrl);
 		// WrapAndUnwrap_RSA_OAEP(credentials, vaultUrl);
-		EncryptAndDecrypt_RSA1_5(credentials, vaultUrl);
-		EncryptAndDecrypt_RSA_OAEP(credentials, vaultUrl);
+		// EncryptAndDecrypt_RSA1_5(credentials, vaultUrl);
+		// EncryptAndDecrypt_RSA_OAEP(credentials, vaultUrl);
+		DisplayPublicKey(credentials, vaultUrl);
+	}
+
+	public static void DisplayPublicKey(KeyVaultCredentials credentials, String vaultUrl)
+	{
+		KeyVaultClient kvc = new KeyVaultClient(credentials);
+		String mySecretData = "HelloWorld!";
+
+		// create a key
+		// if the key exists, then a new version is created
+		Builder keyRequestBuilder = new Builder(vaultUrl, "SenthuranKey", JsonWebKeyType.RSA);
+		CreateKeyRequest createKeyRequest = keyRequestBuilder.build();
+		KeyBundle bundle = kvc.createKey(createKeyRequest);
+
+		String keyId = bundle.keyIdentifier().identifier();
+		bundle = kvc.getKey(keyId);
+
+		KeyPair keyPair = bundle.key().toRSA();
+		PublicKey publicKey = keyPair.getPublic();
+
+		System.out.println(publicKey.getAlgorithm()); // prints RSA
+		System.out.println(publicKey.getFormat()); // prints X.509
 	}
 
 	public static void GetSecret(KeyVaultCredentials credentials, String vaultUrl) {
