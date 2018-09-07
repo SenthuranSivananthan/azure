@@ -241,11 +241,13 @@ helm repo add azure https://kubernetescharts.blob.core.windows.net/azure
 
 #### Deploy OBSA through Helm
 
+```bash
 helm install azure/open-service-broker-azure --name osba --namespace osba \
     --set azure.subscriptionId=a751c1a8-0000-0000-a835-a21e92eda7c4 \
     --set azure.tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47 \
     --set azure.clientId=41a0000c-0000-4d0e-0000-93d6cfd0cfae \
     --set azure.clientSecret=6df988bf-0000-0000-91ab-2d7cd0da2b47
+```
 
 ## Clean Up
 
