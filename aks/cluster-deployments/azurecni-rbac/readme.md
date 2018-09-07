@@ -52,13 +52,25 @@ You can retrieve the resource group that was created as part of the deployment u
 az aks show --name myAKSCluster --resource-group aks --query nodeResourceGroup
 ```
 
-#### #3 - Immutable attributes
+#### #3 - Secrets can not be rotated
+
+At this time, the secrets used for Azure AD integration and Service Principal account **can not** be rotated as they are immutable.  *The only way to rotate secrets at this time is through a cluster redeployment.*
+
+#### #4 - Azure AD accounts
+
+Following two limitations exist today:
+
+* Existing non-RBAC enabled AKS clusters cannot currently be updated for RBAC use.
+* Guest users in Azure AD, such as if you are using a federated login from a different directory, **are not supported.**
+
+#### #5 - Immutable attributes
 
 While the ARM template can be executed many times, there are some attributes that are immutable.  These are:
 
 * servicePrincipalProfile
 * aadProfile
 * agentPools
+
 
 
 ## Prepare environment
