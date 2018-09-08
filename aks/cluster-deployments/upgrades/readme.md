@@ -66,7 +66,7 @@ az aks list --resource-group aks -o table
 For the prompt, enter:
 
 * Name:  *Cluster name from above*
-* Kubernetes Vesrion: 1.11.1
+* Kubernetes Vesrion: 1.11.2
 
 ```yaml
 # Deploy ARM template to upgrade
@@ -100,3 +100,11 @@ az group deployment create -g aks --template-file upgrade.json
 ```
 
 Repeat until you reach the target Kubernetes version.
+
+## Clean Up
+
+To clean up, simply delete the resource group.
+
+```bash
+az group delete -g aks --yes --no-wait
+```
