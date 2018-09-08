@@ -80,7 +80,7 @@ KubernetesVersion    Upgrades
 1.7.7                1.7.9, 1.7.12, 1.7.15, 1.7.16, 1.8.1, 1.8.2, 1.8.6, 1.8.7, 1.8.10, 1.8.11, 1.8.14
 ```
 
-### Deploy Cluster with version 1.9.9
+### Deploy Cluster with Kubernetes 1.9.9
 
 ```bash
 # Create resource group
@@ -90,7 +90,7 @@ az group create --resource-group aks -l eastus
 az group deployment create -g aks --template-file deploy.json
 ```
 
-### Upgrade Cluster to 1.11.2
+### Upgrade Cluster to Kubernetes 1.11.2
 
 ```bash
 # Get the name of the AKS cluster
@@ -100,7 +100,7 @@ az aks list --resource-group aks -o table
 For the prompt, enter:
 
 * Name:  *Cluster name from above*
-* Kubernetes Vesrion: 1.11.2
+* Kubernetes version: 1.11.2
 
 ```yaml
 # Deploy ARM template to upgrade
@@ -126,7 +126,7 @@ az aks list --resource-group aks -o table
 For the prompt, enter:
 
 * Name:  *Cluster name from above*
-* Kubernetes Vesrion: 1.10.7
+* Kubernetes version: 1.10.7
 
 ```yaml
 # Deploy ARM template to upgrade
