@@ -44,9 +44,9 @@ Name     ResourceGroup    MasterVersion    NodePoolVersion    Upgrades
 default  aks             1.9.9            1.9.9              1.9.10, 1.10.3, 1.10.5, 1.10.6, 1.10.7
 ```
 
-```bash
-# Alternatively, you can also look at all versions available in a given region
+Alternatively, you can also look at all versions available in a given region.
 
+```bash
 az aks get-versions --location eastus -o table
 ```
 
