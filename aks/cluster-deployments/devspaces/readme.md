@@ -16,7 +16,7 @@ az aks list --resource-group aks -o table
 
 #### Enable HTTP Application Routing
 
-Enabling HTTP Application Routing will create a DNS zone as **[guid].[region].aksapp.io**, for example: *2b282ad0cac343c28944.canadacentral.aksapp.io*
+Enabling HTTP Application Routing will create a DNS zone as **[guid].[region].aksapp.io**, for example: `2b282ad0cac343c28944.canadacentral.aksapp.io`
 
 This DNS zone is deployed to the node resource group (i.e. **MC_** resource group associated to the cluster).
 
@@ -38,7 +38,8 @@ Follow the instructions on https://docs.microsoft.com/en-us/azure/aks/http-appli
 
 #### Enable Dev Spaces
 
-**Note:**  *--update* switch is optional.  This is update the local client components and can take some time depending on the update packages.
+**Note:**  *--update* switch is optional.  This switch will install or update the local client components (i.e. azds) and can take some time depending on the packages that needs to be downloaded.
+
 ```
 az aks use-dev-spaces --resource-group myResourceGroup --name myAKSCluster --update
 ```
