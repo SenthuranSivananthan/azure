@@ -1,0 +1,222 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sshUsername": {
+            "type": "string"
+        },
+        "sshKey": {
+            "type": "securestring"
+        },
+        "servicePrincipalAppId": {
+            "type": "string"
+        },
+        "servicePrincipalAppSecret": {
+            "type": "securestring"
+        },
+        "aadTenantId": {
+            "type": "string"
+        },
+        "aadClientAppId": {
+            "type": "string"
+        },
+        "aadServerAppId": {
+            "type": "string"
+        },
+        "aadServerAppSecret": {
+            "type": "securestring"
+        },
+        "kubernetesVersion": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "vnet": {
+            "addressPrefix": "10.0.0.0/16",
+            "dmz": {
+                "addressPrefix": "10.0.0.0/21"
+            },
+            "aks": {
+                "addressPrefix": "10.0.8.0/21"
+            }
+        },
+        "loganalytics": {
+            "name": "[concat('aks-log-analytics-', uniqueString(resourceGroup().id))]"
+        },
+        "aks": {
+            "agentpools": {
+                "pool1": {
+                    "name": "generalpool",
+                    "sku": "Standard_D4_v3",
+                    "nodes": 2
+                }
+            },
+            "kubernetesVersion": "[parameters('kubernetesVersion')]",
+            "name": "[concat('k', uniqueString(resourceGroup().id))]",
+            "dnsPrefix": "[concat('k', uniqueString(resourceGroup().id))]",
+            "networkProfile": {
+                "networkPlugin": "azure",
+                "podCidr": "11.0.0.0/16",
+                "serviceCidr": "20.0.0.0/16",
+                "dnsServiceIP": "20.0.0.10",
+                "dockerBridgeCidr": "30.0.0.1/16"
+            },
+            "ssh": {
+                "username": "[parameters('sshUsername')]",
+                "publicKey": "[parameters('sshKey')]"
+            },
+            "servicePrincipal": {
+                "clientId": "[parameters('servicePrincipalAppId')]",
+                "secret": "[parameters('servicePrincipalAppSecret')]"
+            },
+            "aadIntegration": {
+                "serverAppId": "[parameters('aadServerAppId')]",
+                "serverAppSecret": "[parameters('aadServerAppSecret')]",
+                "clientAppId": "[parameters('aadClientAppId')]",
+                "tenantId": "[parameters('aadTenantId')]"
+            }
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-11-01-preview",
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "name": "[variables('loganalytics').name]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "Name": "Free"
+                }
+            },
+            "resources": [
+                {
+                    "dependsOn": [
+                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('loganalytics').name)]"
+                    ],
+                    "type": "Microsoft.Resources/deployments",
+                    "name": "[Concat('ContainerInsights', '(', variables('loganalytics').name, ')')]",
+                    "apiVersion": "2017-05-10",
+                    "properties": {
+                        "mode": "Incremental",
+                        "template": {
+                            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                            "contentVersion": "1.0.0.0",
+                            "parameters": {},
+                            "variables": {},
+                            "resources": [
+                                {
+                                    "apiVersion": "2015-11-01-preview",
+                                    "type": "Microsoft.OperationsManagement/solutions",
+                                    "location": "[resourceGroup().location]",
+                                    "name": "[Concat('ContainerInsights', '(', variables('loganalytics').name, ')')]",
+                                    "properties": {
+                                        "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('loganalytics').name)]"
+                                    },
+                                    "plan": {
+                                        "name": "[Concat('ContainerInsights', '(', variables('loganalytics').name, ')')]",
+                                        "product": "[Concat('OMSGallery/', 'ContainerInsights')]",
+                                        "promotionCode": "",
+                                        "publisher": "Microsoft"
+                                    }
+                                }
+                            ]
+                        },
+                        "parameters": {}
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2017-10-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "vnet",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "dmz",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet').dmz.addressPrefix]"
+                        }
+                    },
+                    {
+                        "name": "aks",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet').aks.addressPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/virtualNetworks/vnet",
+                "[concat('Microsoft.OperationalInsights/workspaces/', variables('loganalytics').name)]"
+            ],
+            "name": "[variables('aks').name]",
+            "type": "Microsoft.ContainerService/managedClusters",
+            "apiVersion": "2018-03-31",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "project": "POC",
+                "author": "Senthuran"
+            },
+            "properties": {
+                "kubernetesVersion": "[variables('aks').kubernetesVersion]",
+                "dnsPrefix": "[variables('aks').dnsPrefix]",
+                "agentPoolProfiles": [
+                    {
+                        "name": "[variables('aks').agentpools.pool1.name]",
+                        "count": "[variables('aks').agentpools.pool1.nodes]",
+                        "vmSize": "[variables('aks').agentpools.pool1.sku]",
+                        "osDiskSizeGB": 127,
+                        "vnetSubnetID": "[concat(resourceId('Microsoft.Network/virtualNetworks', 'vnet'), '/subnets/aks')]",
+                        "osType": "Linux"
+                    }
+                ],
+                "linuxProfile": {
+                    "adminUsername": "[variables('aks').ssh.username]",
+                    "ssh": {
+                        "publicKeys": [
+                            {
+                                "keyData": "[variables('aks').ssh.publicKey]"
+                            }
+                        ]
+                    }
+                },
+                "servicePrincipalProfile": {
+                    "clientId": "[variables('aks').servicePrincipal.clientId]",
+                    "secret": "[variables('aks').servicePrincipal.secret]"
+                },
+                "addonProfiles": {
+                    "omsagent": {
+                        "enabled": true,
+                        "config": {
+                            "logAnalyticsWorkspaceResourceID": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('loganalytics').name)]"
+                        }
+                    }
+                },
+                "enableRBAC": true,
+                "networkProfile": {
+                    "networkPlugin": "[variables('aks').networkProfile.networkPlugin]",
+                    "podCidr": "[variables('aks').networkProfile.podCidr]",
+                    "serviceCidr": "[variables('aks').networkProfile.serviceCidr]",
+                    "dnsServiceIP": "[variables('aks').networkProfile.dnsServiceIP]",
+                    "dockerBridgeCidr": "[variables('aks').networkProfile.dockerBridgeCidr]"
+                },
+                "aadProfile": {
+                    "clientAppID": "[variables('aks').aadIntegration.clientAppId]",
+                    "serverAppID": "[variables('aks').aadIntegration.serverAppId]",
+                    "serverAppSecret": "[variables('aks').aadIntegration.serverAppSecret]",
+                    "tenantID": "[variables('aks').aadIntegration.tenantId]"
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
