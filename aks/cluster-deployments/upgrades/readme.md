@@ -8,11 +8,9 @@ Please remember that AKS will allow 1 minor version upgrade per execution.  This
 
 Follow steps are taken by AKS to upgrade your cluster nodes:
 
-*Let's assume the cluster has 5 nodes.*
-
 1. Master nodes are upgraded.
 
-2. A new node is created with the target version and added to the cluster.
+2. A new node is created with the target Kubernetes version and added to the cluster.  A node is added so that the cluster will not lose the compute capacity during the upgrade process.
 
 3. A node is selected from the node pool
     - Scheduling is disabled [  **Status: SchedulingDisabled** ]
@@ -23,7 +21,8 @@ Follow steps are taken by AKS to upgrade your cluster nodes:
 
 5. Steps 3 and 4 are repeated for every node except the last node.
 
-6. Last node is deleted.  This is because in step 1, a new node was added so that the cluster will not lose the compute capacity during the upgrade process.
+6. Last node follows step 3 only.
+
 
 ## Steps to upgrade
 
