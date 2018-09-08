@@ -1,4 +1,4 @@
-# Kubernetes Cluster with RBAC and Container Insights
+# Kubernetes Cluster with Azure CNI, RBAC and Container Insights
 
 This example deployes the following components through ARM template:
 
@@ -20,7 +20,7 @@ Post deployment configurations include:
 
 AKS supports two types of Container Networking Interfaces (CNIs):
 
-* Kubenet
+* [Kubenet](../kubenet-rbac)
 * Azure CNI
 
 Azure CNI assigns an IP address from the virtual network to every pod in the cluster.  The benefits are:
@@ -75,18 +75,18 @@ While the ARM template can be executed many times, there are some attributes tha
 
 ## Prepare environment
 
-### Create resource group
+#### Create resource group
 
 ```bash
 az group create --resource-group aks -l eastus
 ```
 
-### Create Service Principal for managing Azure resources through the cluster
+#### Create Service Principal for managing Azure resources through the cluster
 
 ```bash
 az ad sp create-for-rbac --name ss-aks --role Contributor
 ```
-### Create Server and Client Application Registrations for Azure AD integration
+#### Create Server and Client Application Registrations for Azure AD integration
 
 Client app registration is used for interacting through `kubectl`.
 
@@ -98,7 +98,7 @@ az ad app create --display-name ss-aad-aks-server --identifier-uris https://ss-a
 az ad app create --display-name ss-aad-aks-client --native-app true
 ```
 
-### Update Permissions on the application through Azure Portal
+#### Update Permissions on the application through Azure Portal
 
 Follow the instructions on 
   https://docs.microsoft.com/en-us/azure/aks/aad-integration
@@ -239,7 +239,7 @@ az ad sp create-for-rbac --name ss-aks-obsa
 }
 ```
 
-#### Get the Subscription ID
+#### Get Subscription ID
 
 ```bash
 az account show --query id --output tsv
