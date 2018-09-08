@@ -25,6 +25,9 @@
         },
         "aadServerAppSecret": {
             "type": "securestring"
+        },
+        "kubernetesVersion": {
+            "type": "string"
         }
     },
     "variables": {
@@ -45,10 +48,10 @@
                 "pool1": {
                     "name": "generalpool",
                     "sku": "Standard_D4_v3",
-                    "nodes": 1
+                    "nodes": 2
                 }
             },
-            "kubernetesVersion": "1.11.2",
+            "kubernetesVersion": "[parameters('kubernetesVersion')]",
             "name": "[concat('k', uniqueString(resourceGroup().id))]",
             "dnsPrefix": "[concat('k', uniqueString(resourceGroup().id))]",
             "networkProfile": {
