@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterName": {
+            "type": "string"
+        },
+        "kubernetesVersion": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "aksId": "[resourceId('Microsoft.ContainerService/managedClusters', parameters('clusterName'))]"
+    },
+    "resources": [
+        {
+            "name": "[parameters('clusterName')]",
+            "id": "[variables('aksId')]",
+            "type": "Microsoft.ContainerService/managedClusters",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2018-03-31",
+            "properties": {
+                "mode": "Incremental",
+                "kubernetesVersion": "[parameters('kubernetesVersion')]",
+                "enableRBAC": true
+            }
+        }
+    ],
+    "outputs": {}
+}
