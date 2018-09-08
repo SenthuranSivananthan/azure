@@ -24,9 +24,11 @@ Follow steps are taken by AKS to upgrade your cluster nodes:
 6. Last node follows step 3 only.
 
 
-## Steps to upgrade
+## Steps
 
-### Lookup the available upgrades
+The deployment in this example is based on Azure CNI.  Please review [Azure CNI + RBAC deployment](../azurecni-rbac) for more information.
+
+#### Lookup the available upgrades
 
 ```bash
 # Get the name of the AKS cluster
@@ -80,7 +82,7 @@ KubernetesVersion    Upgrades
 1.7.7                1.7.9, 1.7.12, 1.7.15, 1.7.16, 1.8.1, 1.8.2, 1.8.6, 1.8.7, 1.8.10, 1.8.11, 1.8.14
 ```
 
-### Deploy Cluster with Kubernetes 1.9.9
+#### Deploy Cluster with Kubernetes 1.9.9
 
 ```bash
 # Create resource group
@@ -90,7 +92,7 @@ az group create --resource-group aks -l eastus
 az group deployment create -g aks --template-file deploy.json
 ```
 
-### Upgrade Cluster to Kubernetes 1.11.2
+#### Upgrade Cluster to Kubernetes 1.11.2
 
 ```bash
 # Get the name of the AKS cluster
@@ -102,7 +104,7 @@ For the prompt, enter:
 * Name:  *Cluster name from above*
 * Kubernetes version: 1.11.2
 
-```yaml
+```bash
 # Deploy ARM template to upgrade
 az group deployment create -g aks --template-file upgrade.json
 ```
@@ -116,7 +118,7 @@ Deployment failed. Correlation ID: 1fc57954-5a72-44b6-b9a3-a79311598365. {
 }
 ```
 
-### Upgrade 1 minor version at a time
+#### Upgrade 1 minor version at a time
 
 ```bash
 # Get the name of the AKS cluster
@@ -128,7 +130,7 @@ For the prompt, enter:
 * Name:  *Cluster name from above*
 * Kubernetes version: 1.10.7
 
-```yaml
+```bash
 # Deploy ARM template to upgrade
 az group deployment create -g aks --template-file upgrade.json
 ```
