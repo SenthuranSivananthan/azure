@@ -1,0 +1,85 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterName": {
+            "type": "string"
+        },
+        "rbacEnabledOnCluster": {
+            "type": "bool",
+            "allowedValues": [
+                true,
+                false
+            ]
+        },
+        "logAnalyticsWorkspaceId": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspaceLocation": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "aksId": "[resourceId('Microsoft.ContainerService/managedClusters', parameters('clusterName'))]",
+        "logAnalytics": {
+            "subscriptionId": "[split(parameters('logAnalyticsWorkspaceId'),'/')[2]]",
+            "resourceGroup": "[split(parameters('logAnalyticsWorkspaceId'),'/')[4]]",
+            "name": "[split(parameters('logAnalyticsWorkspaceId'),'/')[8]]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[Concat('ContainerInsights', '(', variables('logAnalytics').name, ')')]",
+            "apiVersion": "2017-05-10",
+            "subscriptionId": "[variables('logAnalytics').subscriptionId]",
+            "resourceGroup": "[variables('logAnalytics').resourceGroup]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "apiVersion": "2015-11-01-preview",
+                            "type": "Microsoft.OperationsManagement/solutions",
+                            "location": "[parameters('logAnalyticsWorkspaceLocation')]",
+                            "name": "[Concat('ContainerInsights', '(', variables('logAnalytics').name, ')')]",
+                            "properties": {
+                                "workspaceResourceId": "[parameters('logAnalyticsWorkspaceId')]"
+                            },
+                            "plan": {
+                                "name": "[Concat('ContainerInsights', '(', variables('logAnalytics').name, ')')]",
+                                "product": "[Concat('OMSGallery/', 'ContainerInsights')]",
+                                "promotionCode": "",
+                                "publisher": "Microsoft"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "[parameters('clusterName')]",
+            "id": "[variables('aksId')]",
+            "type": "Microsoft.ContainerService/managedClusters",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2018-03-31",
+            "properties": {
+                "mode": "Incremental",
+                "enableRBAC": "[parameters('rbacEnabledOnCluster')]",
+                "addonProfiles": {
+                    "omsagent": {
+                        "enabled": true,
+                        "config": {
+                            "logAnalyticsWorkspaceResourceID": "[parameters('logAnalyticsWorkspaceId')]"
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
