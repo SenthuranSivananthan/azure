@@ -26,7 +26,7 @@ Follow steps are taken by AKS to upgrade your cluster nodes:
 
 ## Steps
 
-The deployment in this example is based on Azure CNI.  Please review [Azure CNI + RBAC deployment](../azurecni-rbac) for more information.
+> The deployment in this example is based on Azure CNI.  Please review [Azure CNI + RBAC deployment](../azurecni-rbac) for more information.
 
 #### Lookup the available upgrades
 

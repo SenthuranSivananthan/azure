@@ -8,7 +8,7 @@ More information: https://docs.microsoft.com/en-us/azure/dev-spaces/azure-dev-sp
 
 ## Steps
 
-The deployment in this example is based on Azure CNI.  Please review [Azure CNI + RBAC deployment](../azurecni-rbac) for more information.
+> The deployment in this example is based on Azure CNI.  Please review [Azure CNI + RBAC deployment](../azurecni-rbac) for more information.
 
 #### Get the name of the AKS cluster
 
