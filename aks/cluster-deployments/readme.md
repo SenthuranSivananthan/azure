@@ -9,5 +9,5 @@ Category| Scenario | Description | Link |
 | Operations | Backup & Restore | Backup & Restore AKS configuration using Heptio ARK | **Coming Soon**
 | Operations | Monitoring | Monitor with Container Insights | [Deployment](container-insights)
 | Operations | Upgrades | Upgrade an AKS cluster using ARM template | [Deployment](upgrades)
-| Operations | Patching | Apply security patches | **Coming Soon**
+| Operations | Patching | Apply security patches | [Deployment](patching)
 | Developer Tools | Dev Spaces | Configure an AKS cluster with Dev Spaces so that developers can debug directly with AKS | [Deployment](devspaces)
