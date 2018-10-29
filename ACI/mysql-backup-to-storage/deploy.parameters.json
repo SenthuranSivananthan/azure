@@ -26,6 +26,9 @@
         "azureStorageSasToken": {
             "value": ""
         },
+        "containerImage": {
+            "value": ""
+        },
         "containerRegistery": {
             "value": ""
         },

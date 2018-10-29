@@ -34,8 +34,13 @@
             "type": "securestring",
             "minLength": 1
         },
+        "containerImage": {
+            "type": "string",
+            "minLength": 1
+        },
         "containerRegistery": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
         },
         "containerRegisteryUsername": {
             "type": "string"
@@ -56,7 +61,7 @@
                     {
                         "name": "mysqlexport",
                         "properties": {
-                            "image": "ssacr.azurecr.io/mysqlexport:1.0",
+                            "image": "[parameters('containerImage')]",
                             "environmentVariables": [
                                 {
                                     "name": "MYSQL_HOST",
