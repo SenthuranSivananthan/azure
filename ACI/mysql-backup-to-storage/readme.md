@@ -18,6 +18,8 @@ docker build -t mysqlexport .
 docker tag -t mysqlexport:latest <your ACR instance>.azurecr.io/mysqlexport:1.0
 # Login to your ACR
 docker login <your ACR instance>.azurecr.io -u <your username>
+# Push image
+docker push <your ACR instance>.azurecr.io/mysqlexport:1.0
 ```
 
 5. Run the container locally.  Note that you'll need to whitelist your IP address on the MySQL instance.  Fill in the parameters (-e) with the appropriate values from your deployment.
