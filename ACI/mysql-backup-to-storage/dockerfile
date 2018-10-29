@@ -1,0 +1,18 @@
+FROM microsoft/azure-cli:latest
+
+RUN apk update && apk upgrade 
+RUN apk add mysql-client
+
+ENV MYSQL_HOST ""
+ENV MYSQL_USER ""
+ENV MYSQL_PASS ""
+ENV MYSQL_BACKUPDBS ""
+ENV MYSQL_BACKUP_FILE ""
+ENV AZ_BACKUP_STORAGE_ACCOUNT ""
+ENV AZ_BACKUP_STORAGE_CONTAINER ""
+ENV AZ_BACKUP_STORAGE_SASTOKEN ""
+
+ENTRYPOINT \
+    export TIMESTAMP=$(date +"%Y%m%d-%T") \
+    && mysqldump --ssl -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASS} --databases ${MYSQL_BACKUPDBS} > /tmp/$TIMESTAMP-${MYSQL_BACKUP_FILE} \
+    && az storage blob upload --account-name ${AZ_BACKUP_STORAGE_ACCOUNT} --container-name ${AZ_BACKUP_STORAGE_CONTAINER} --file /tmp/$TIMESTAMP-${MYSQL_BACKUP_FILE} --name $TIMESTAMP-${MYSQL_BACKUP_FILE} --sas-token ${AZ_BACKUP_STORAGE_SASTOKEN} 

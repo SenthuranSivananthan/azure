@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "mysqlHost": {
+            "value": ""
+        },
+        "mysqlUsername": {
+            "value": ""
+        },
+        "mysqlPassword": {
+            "value": ""
+        },
+        "mysqlBackupDatabases": {
+            "value": ""
+        },
+        "mysqlBackupFile": {
+            "value": ""
+        },
+        "azureStorageAccountName": {
+            "value": ""
+        },
+        "azureStorageContainerName": {
+            "value": ""
+        },
+        "azureStorageSasToken": {
+            "value": ""
+        },
+        "containerRegistery": {
+            "value": ""
+        },
+        "containerRegisteryUsername": {
+            "value": ""
+        },
+        "containerRegisteryPassword": {
+            "value": ""
+        }
+    }
+}

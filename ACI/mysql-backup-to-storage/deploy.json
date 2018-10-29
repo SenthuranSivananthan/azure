@@ -1,0 +1,120 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "mysqlHost": {
+            "type": "string",
+            "minLength": 1
+        },
+        "mysqlUsername": {
+            "type": "string",
+            "minLength": 1
+        },
+        "mysqlPassword": {
+            "type": "securestring",
+            "minLength": 1
+        },
+        "mysqlBackupDatabases": {
+            "type": "string",
+            "minLength": 1
+        },
+        "mysqlBackupFile": {
+            "type": "string",
+            "minLength": 1
+        },
+        "azureStorageAccountName": {
+            "type": "string",
+            "minLength": 1
+        },
+        "azureStorageContainerName": {
+            "type": "string",
+            "minLength": 1
+        },
+        "azureStorageSasToken": {
+            "type": "securestring",
+            "minLength": 1
+        },
+        "containerRegistery": {
+            "type": "string"
+        },
+        "containerRegisteryUsername": {
+            "type": "string"
+        },
+        "containerRegisteryPassword": {
+            "type": "securestring"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "name": "mysqlexport",
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2018-10-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "containers": [
+                    {
+                        "name": "mysqlexport",
+                        "properties": {
+                            "image": "ssacr.azurecr.io/mysqlexport:1.0",
+                            "environmentVariables": [
+                                {
+                                    "name": "MYSQL_HOST",
+                                    "value": "[parameters('mysqlHost')]"
+                                },
+                                {
+                                    "name": "MYSQL_USER",
+                                    "value": "[parameters('mysqlUsername')]"
+                                },
+                                {
+                                    "name": "MYSQL_PASS",
+                                    "secureValue": "[parameters('mysqlPassword')]"
+                                },
+                                {
+                                    "name": "MYSQL_BACKUPDBS",
+                                    "value": "[parameters('mysqlBackupDatabases')]"
+                                },
+                                {
+                                    "name": "MYSQL_BACKUP_FILE",
+                                    "value": "[parameters('mysqlBackupFile')]"
+                                },
+                                {
+                                    "name": "AZ_BACKUP_STORAGE_ACCOUNT",
+                                    "value": "[parameters('azureStorageAccountName')]"
+                                },
+                                {
+                                    "name": "AZ_BACKUP_STORAGE_CONTAINER",
+                                    "value": "[parameters('azureStorageContainerName')]"
+                                },
+                                {
+                                    "name": "AZ_BACKUP_STORAGE_SASTOKEN",
+                                    "secureValue": "[parameters('azureStorageSasToken')]"
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "memoryInGB": 1,
+                                    "cpu": 1
+                                },
+                                "limits": {
+                                    "memoryInGB": 1,
+                                    "cpu": 1
+                                }
+                            }
+                        }
+                    }
+                ],
+                "imageRegistryCredentials": [
+                    {
+                        "server": "[parameters('containerRegistery')]",
+                        "username": "[parameters('containerRegisteryUsername')]",
+                        "password": "[parameters('containerRegisteryPassword')]"
+                    }
+                ],
+                "restartPolicy": "Never",
+                "osType": "Linux"
+            }
+        }
+    ],
+    "outputs": {}
+}
