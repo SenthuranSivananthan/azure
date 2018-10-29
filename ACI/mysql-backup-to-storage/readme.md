@@ -1,6 +1,6 @@
 # Backup MySQL databases using ACI
 
-The purpose of this prototype is to allow MySQL admins to backup databases to Azure Storage for long term retention.  MySQL as a Service on Azure currently supports up to 35 days of backups, but for anything longer, you'll need to backup.  This behaviour may change in the future.
+The purpose of this prototype is to allow MySQL admins to backup databases to Azure Storage for long term retention.  MySQL as a Service on Azure currently supports up to [35 days of backups](https://docs.microsoft.com/en-us/azure/mysql/concepts-backup), but for anything longer, you'll need to backup.  This behaviour may change in the future.
 
 ## Disclaimer
 
@@ -33,7 +33,9 @@ docker push <your ACR instance>.azurecr.io/mysqlexport:1.0
 
 Fill in the parameters (-e) with the appropriate values from your deployment.
 
-> Note that you'll need to whitelist your IP address on the MySQL instance.
+Note that you'll need to [whitelist your IP address](https://docs.microsoft.com/en-us/azure/mysql/howto-manage-firewall-using-portal) on the MySQL instance.
+
+![Whitelist IP](https://docs.microsoft.com/en-us/azure/mysql/media/howto-manage-firewall-using-portal/2-add-my-ip.png)
 
 ```bash
 docker run -e MYSQL_HOST="" -e MYSQL_USER="" -e MYSQL_PASS="" -e MYSQL_BACKUPDBS="" -e MYSQL_BACKUP_FILE="backup.sql" -e AZ_BACKUP_STORAGE_ACCOUNT="" -e AZ_BACKUP_STORAGE_CONTAINER="" -e AZ_BACKUP_STORAGE_SASTOKEN="" -t mysqlexport:latest
@@ -43,7 +45,9 @@ docker run -e MYSQL_HOST="" -e MYSQL_USER="" -e MYSQL_PASS="" -e MYSQL_BACKUPDBS
 
 As of writing this post, ACI in VNETs are only supported in West US, West Central US, North Europe and West Europe.
 
-Therefore, you can't use Service Endpoints in all cases.  If your environment is another region that's not listed above, then you'll need to set 'Allow access to Azure services' to **ON** in MySQL Connection Security.
+Therefore, you can't use Service Endpoints in all cases.  If your environment is another region that's not listed above, then you'll need to set ['Allow access to Azure services'](https://docs.microsoft.com/en-us/azure/mysql/concepts-firewall-rules) to **ON** in MySQL Connection Security.
+
+![Access settings](https://docs.microsoft.com/en-us/azure/mysql/media/concepts-firewall-rules/allow-azure-services.png)
 
 ```bash
 # Edit deploy.parameters.json and fill in your environment information.
