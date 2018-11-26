@@ -1,0 +1,28 @@
+{
+  "if": {
+    "field": "type",
+    "equals": "Microsoft.Storage/storageAccounts"
+  },
+  "then": {
+    "effect": "append",
+    "details": [
+      {
+        "field": "Microsoft.Storage/storageAccounts/networkAcls.defaultAction",
+        "value": "Deny"
+      },
+      {
+        "field": "Microsoft.Storage/storageAccounts/networkAcls.ipRules",
+        "value": [
+          {
+            "action": "Allow",
+            "value": "a.b.c.d"
+          },
+          {
+            "action": "Allow",
+            "value": "a.b.c.d"
+          }
+        ]
+      }
+    ]
+  }
+}
