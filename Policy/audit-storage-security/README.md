@@ -4,6 +4,7 @@
 
 | Policy        | Description           | Status  |
 | ------------- |-------------| -----  |
+| append-storage-ip-restirctions.json | Automatically append IP restrictions to storage accounts | Done |
 | audit-storage-blob-encryption.json | Monitor server-side encryption at REST for Blobs | Done |
 | audit-storage-file-encryption.json | Monitor server-side encryption at REST for Files | Done |
 | audit-storage-https-only.json | Monitor for traffic to be over HTTPS for Storage Accounts | Done |
