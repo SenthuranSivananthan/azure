@@ -1,0 +1,152 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Cdn/profiles",
+            "sku": {
+                "name": "Standard_Akamai"
+            },
+            "name": "akamai-dsa",
+            "apiVersion": "2017-10-12",
+            "location": "[resourceGroup().location]"
+        },
+        {
+            "type": "Microsoft.Cdn/profiles/endpoints",
+            "name": "akamai-dsa/senthurangithub",
+            "apiVersion": "2017-10-12",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "hostName": "senthuran.azureedge.net",
+                "originHostHeader": "www.github.com",
+                "probePath": "/senthuransivananthan",
+                "isHttpAllowed": true,
+                "isHttpsAllowed": true,
+                "queryStringCachingBehavior": "IgnoreQueryString",
+                "origins": [
+                    {
+                        "name": "www-github-com",
+                        "properties": {
+                            "hostName": "www.github.com",
+                            "httpPort": 80,
+                            "httpsPort": 443
+                        }
+                    }
+                ],
+                "contentTypesToCompress": [
+                    "text/plain",
+                    "text/html",
+                    "text/css",
+                    "text/javascript",
+                    "application/x-javascript",
+                    "application/javascript",
+                    "application/json",
+                    "application/xml"
+                ],
+                "isCompressionEnabled": true,
+                "optimizationType": "DynamicSiteAcceleration",
+                "deliveryPolicy": {
+                    "description": "string",
+                    "rules": [
+                        {
+                            "order": 0,
+                            "conditions": [],
+                            "actions": [
+                                {
+                                    "name": "CacheExpiration",
+                                    "parameters": {
+                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleCacheExpirationActionParameters",
+                                        "cacheBehavior": "Override",
+                                        "cacheDuration": "00:05:00",
+                                        "cacheType": "All"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "order": 1,
+                            "conditions": [
+                                {
+                                    "name": "UrlPath",
+                                    "parameters": {
+                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleUrlPathConditionParameters",
+                                        "matchType": "Wildcard",
+                                        "path": "/test1"
+                                    }
+                                }
+                            ],
+                            "actions": [
+                                {
+                                    "name": "CacheExpiration",
+                                    "parameters": {
+                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleCacheExpirationActionParameters",
+                                        "cacheBehavior": "Override",
+                                        "cacheDuration": "00:10:00",
+                                        "cacheType": "All"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "order": 2,
+                            "conditions": [
+                                {
+                                    "name": "UrlPath",
+                                    "parameters": {
+                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleUrlPathConditionParameters",
+                                        "matchType": "Wildcard",
+                                        "path": "/test2"
+                                    }
+                                }
+                            ],
+                            "actions": [
+                                {
+                                    "name": "CacheExpiration",
+                                    "parameters": {
+                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleCacheExpirationActionParameters",
+                                        "cacheBehavior": "Override",
+                                        "cacheDuration": "00:15:00",
+                                        "cacheType": "All"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "order": 3,
+                            "conditions": [
+                                {
+                                    "name": "UrlFileExtension",
+                                    "parameters": {
+                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleUrlFileExtensionConditionParameters",
+                                        "extensions": [
+                                            "jpg",
+                                            "png",
+                                            "gif"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "actions": [
+                                {
+                                    "name": "CacheExpiration",
+                                    "parameters": {
+                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleCacheExpirationActionParameters",
+                                        "cacheBehavior": "Override",
+                                        "cacheDuration": "00:20:00",
+                                        "cacheType": "All"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', 'akamai-dsa')]"
+            ]
+        }
+    ],
+    "outputs": {}
+}
