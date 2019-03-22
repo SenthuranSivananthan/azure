@@ -1,0 +1,85 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2018-11-01",
+            "location": "eastus",
+            "name": "vnet-eastus",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.1.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "apim",
+                        "properties": {
+                            "addressPrefix": "10.1.0.0/24"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2018-11-01",
+            "location": "westus",
+            "name": "vnet-westus",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.2.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "apim",
+                        "properties": {
+                            "addressPrefix": "10.2.0.0/24"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dependsOn": [
+                "Microsoft.Network/virtualNetworks/vnet-eastus",
+                "Microsoft.Network/virtualNetworks/vnet-westus"
+            ],
+            "location": "eastus",
+            "name": "[concat('apim-', uniqueString(resourceGroup().id))]",
+            "type": "Microsoft.ApiManagement/service",
+            "apiVersion": "2018-01-01",
+            "properties": {
+                "virtualNetworkType": "External",
+                "virtualNetworkConfiguration": {
+                    "subnetResourceId": "[concat(resourceId('Microsoft.Network/virtualNetworks', 'vnet-eastus'), '/subnets/apim')]"
+                },
+                "additionalLocations": [
+                    {
+                        "location": "westus",
+                        "sku": {
+                            "name": "Premium",
+                            "capacity": 1
+                        },
+                        "virtualNetworkConfiguration": {
+                            "subnetResourceId": "[concat(resourceId('Microsoft.Network/virtualNetworks', 'vnet-westus'), '/subnets/apim')]"
+                        }
+                    }
+                ],
+                "publisherEmail": "senthuran.sivananthan@microsoft.com",
+                "publisherName": "Senthuran Sivananthan"
+            },
+            "sku": {
+                "name": "Premium",
+                "capacity": 1
+            }
+        }
+    ],
+    "outputs": {}
+}
